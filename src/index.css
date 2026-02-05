@@ -1,0 +1,343 @@
+/* ============================================
+   Custom Bootstrap Theme - Navy & Beige
+   ============================================ */
+
+/* Custom CSS Variables */
+:root {
+  /* Navy Blue (Primary) */
+  --bs-primary: #1a365d;
+  --bs-primary-rgb: 26, 54, 93;
+  
+  /* Beige (Secondary) */
+  --bs-secondary: #d4b896;
+  --bs-secondary-rgb: 212, 184, 150;
+  
+  /* Custom Colors */
+  --navy-dark: #0f2744;
+  --navy-light: #2c5282;
+  --beige-light: #f5f0e8;
+  --beige-dark: #c4a77d;
+  
+  /* Override Bootstrap colors */
+  --bs-body-bg: #f8f9fa;
+  --bs-body-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--bs-body-font-family);
+  background-color: var(--beige-light);
+  min-height: 100vh;
+}
+
+/* Override Bootstrap Primary Button */
+.btn-primary {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--navy-dark) !important;
+  border-color: var(--navy-dark) !important;
+}
+
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--navy-light) !important;
+  border-color: var(--navy-light) !important;
+  box-shadow: 0 0 0 0.25rem rgba(26, 54, 93, 0.25) !important;
+}
+
+/* Secondary Button (Beige) */
+.btn-secondary {
+  background-color: var(--bs-secondary) !important;
+  border-color: var(--bs-secondary) !important;
+  color: var(--navy-dark) !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--beige-dark) !important;
+  border-color: var(--beige-dark) !important;
+}
+
+/* Outline Primary */
+.btn-outline-primary {
+  color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--bs-primary) !important;
+  color: white !important;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--bs-primary);
+  min-height: 100vh;
+  width: 250px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-collapsed {
+  transform: translateX(-250px);
+}
+
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin: 4px 12px;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--bs-secondary);
+  color: var(--navy-dark);
+}
+
+.sidebar .nav-link i {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px;
+  min-height: 100vh;
+  width: calc(100% - 250px);
+  flex: 1;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.main-content.expanded {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Header */
+.header {
+  background-color: white;
+  border-bottom: 1px solid #dee2e6;
+  padding: 16px 24px;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  background-color: var(--beige-light);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px 12px 0 0 !important;
+}
+
+/* Stats Card */
+.stats-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stats-card .icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-card .icon.primary {
+  background-color: rgba(26, 54, 93, 0.1);
+  color: var(--bs-primary);
+}
+
+.stats-card .icon.secondary {
+  background-color: rgba(212, 184, 150, 0.3);
+  color: var(--beige-dark);
+}
+
+/* Login Page */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--beige-light);
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  background-color: var(--bs-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.login-logo i {
+  font-size: 28px;
+  color: white;
+}
+
+/* Tables */
+.table thead th {
+  background-color: var(--beige-light);
+  color: var(--navy-dark);
+  font-weight: 600;
+  border-bottom: 2px solid var(--bs-secondary);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(212, 184, 150, 0.1);
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(26, 54, 93, 0.15);
+}
+
+/* Badges */
+.badge.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--bs-secondary) !important;
+  color: var(--navy-dark) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--beige-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bs-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--beige-dark);
+}
+
+/* Status Badges */
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-available {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-occupied {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-maintenance {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.avatar-primary {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+.avatar-secondary {
+  background-color: var(--bs-secondary);
+  color: var(--navy-dark);
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  color: var(--navy-dark);
+  font-weight: 600;
+}
+
+.page-header p {
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .sidebar {
+    transform: translateX(-250px);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+}
