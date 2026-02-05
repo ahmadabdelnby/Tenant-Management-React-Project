@@ -1,16 +1,171 @@
-# React + Vite
+# PropertyMS - Property Management System (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based frontend application for managing rental properties, tenants, and maintenance requests.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap)
+![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Overview
 
-## React Compiler
+PropertyMS is a comprehensive property management solution designed for property owners, managers, and tenants. This frontend application provides an intuitive interface for managing:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Buildings** - Add and manage multiple properties
+- **Units** - Track individual rental units within buildings
+- **Tenants** - Manage tenant information and profiles
+- **Tenancies** - Handle rental contracts and agreements
+- **Maintenance Requests** - Submit and track maintenance issues
 
-## Expanding the ESLint configuration
+## 🚀 Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### For Administrators
+- Full system access and user management
+- View all buildings, units, and tenancies
+- Manage maintenance request statuses
+- User role assignment
+
+### For Property Owners
+- Manage owned buildings and units
+- View tenancies for owned properties
+- Handle maintenance requests for their properties
+- Track rental income
+
+### For Tenants
+- View personal tenancy information
+- Submit maintenance requests
+- Track request status and resolution
+- Update profile information
+
+## 🛠️ Tech Stack
+
+- **React 18** - UI library
+- **Vite** - Build tool and dev server
+- **React Router v7** - Client-side routing
+- **Redux Toolkit** - State management
+- **React Bootstrap** - UI components
+- **Bootstrap 5** - CSS framework
+- **Bootstrap Icons** - Icon library
+- **React Hook Form** - Form handling
+
+## 🎨 Design
+
+- **Primary Color**: Navy (#1a365d)
+- **Secondary Color**: Beige (#d4b896)
+- **Clean, modern interface** with no gradients
+- **Responsive design** for all screen sizes
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Backend API running on port 5000
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ahmadabdelnby/PropertyMS-React.git
+   cd PropertyMS-React
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in browser**
+   ```
+   http://localhost:3000
+   ```
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── layout/         # Layout components (Sidebar, Header, Footer)
+│   └── common/         # Common components (LoadingSpinner, etc.)
+├── pages/              # Page components
+│   ├── auth/           # Login page
+│   ├── dashboard/      # Dashboard
+│   ├── users/          # User management
+│   ├── buildings/      # Building management
+│   ├── units/          # Unit management
+│   ├── tenancies/      # Tenancy management
+│   ├── maintenance/    # Maintenance requests
+│   └── profile/        # User profile
+├── services/           # API services
+├── store/              # Redux store and slices
+│   └── slices/         # Redux Toolkit slices
+├── App.jsx             # Main app component with routing
+├── main.jsx            # Entry point
+└── index.css           # Global styles
+```
+
+## 🔧 Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+
+## 🔐 Authentication
+
+The application uses JWT-based authentication. Users must log in to access the system. Role-based access control ensures users only see features relevant to their role.
+
+### User Roles
+
+| Role | Permissions |
+|------|-------------|
+| **ADMIN** | Full system access, user management |
+| **OWNER** | Manage own buildings, units, view tenancies |
+| **TENANT** | View own tenancies, submit maintenance requests |
+
+## 🔗 API Integration
+
+The frontend communicates with the backend API via a proxy configuration in Vite:
+
+```javascript
+// vite.config.js
+server: {
+  port: 3000,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:5000',
+      changeOrigin: true,
+    },
+  },
+}
+```
+
+## 📱 Responsive Design
+
+The application is fully responsive and works on:
+- Desktop computers
+- Tablets
+- Mobile devices
+
+## 🤝 Related Projects
+
+- [PropertyMS Backend](https://github.com/ahmadabdelnby/Tenant-Management-Node-Project) - Node.js/Express API with MySQL
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👨‍💻 Author
+
+**Ahmad Abdelnaby**
+
+---
+
+⭐ Star this repository if you find it helpful!
