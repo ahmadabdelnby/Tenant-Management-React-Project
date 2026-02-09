@@ -32,7 +32,7 @@ const authService = {
 
   // Update profile
   updateProfile: async (data) => {
-    const response = await api.put('/auth/profile', data);
+    const response = await api.put('/profile', data);
     if (response.success) {
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...storedUser, ...response.data };
@@ -43,7 +43,7 @@ const authService = {
 
   // Change password
   changePassword: async (data) => {
-    return api.put('/auth/change-password', data);
+    return api.put('/profile/change-password', data);
   },
 
   // Get stored user

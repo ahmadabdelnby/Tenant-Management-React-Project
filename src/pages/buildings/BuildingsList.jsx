@@ -125,7 +125,11 @@ const BuildingsList = () => {
                       <td>
                         <Badge bg="secondary">{building.totalUnits || 0} units</Badge>
                       </td>
-                      <td>{building.ownerName || 'N/A'}</td>
+                      <td>
+                        {building.owner 
+                          ? `${building.owner.firstName} ${building.owner.lastName}`
+                          : 'N/A'}
+                      </td>
                       <td>
                         <Button
                           variant="link"

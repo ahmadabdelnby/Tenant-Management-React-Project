@@ -2,13 +2,20 @@
 // Header Component - Bootstrap Version
 // ============================================
 
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
+import { logout } from '../../store/slices/authSlice';
 
 const Header = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    navigate('/login');
+  };
 
   return (
     <header className="header d-flex align-items-center justify-content-between">
@@ -63,7 +70,7 @@ const Header = ({ onToggleSidebar }) => {
               Settings
             </Dropdown.Item>
             <Dropdown.Divider />
-            <Dropdown.Item onClick={() => navigate('/login')} className="text-danger">
+            <Dropdown.Item onClick={handleLogout} className="text-danger">
               <i className="bi bi-box-arrow-left me-2"></i>
               Logout
             </Dropdown.Item>

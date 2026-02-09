@@ -255,6 +255,7 @@ const UnitForm = () => {
                     <Form.Label>Status</Form.Label>
                     <Form.Select {...register('status')}>
                       <option value="AVAILABLE">Available</option>
+                      <option value="RENTED">Rented</option>
                       <option value="OCCUPIED">Occupied</option>
                       <option value="MAINTENANCE">Maintenance</option>
                     </Form.Select>

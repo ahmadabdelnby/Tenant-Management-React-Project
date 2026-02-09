@@ -146,7 +146,7 @@ const UnitsList = () => {
                           <div className="fw-semibold">{unit.unitNumber}</div>
                         </div>
                       </td>
-                      <td>{unit.buildingName || 'N/A'}</td>
+                      <td>{unit.building?.name || 'N/A'}</td>
                       <td>{unit.type}</td>
                       <td>
                         <small>

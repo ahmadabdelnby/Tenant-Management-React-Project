@@ -57,7 +57,7 @@ const BuildingForm = () => {
         country: currentBuilding.country,
         postalCode: currentBuilding.postalCode || '',
         description: currentBuilding.description || '',
-        ownerId: currentBuilding.ownerId,
+        ownerId: currentBuilding.owner?.id,
       });
     }
   }, [currentBuilding, isEdit, reset]);
@@ -181,7 +181,23 @@ const BuildingForm = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              {isEdit && (
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Total Units</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={currentBuilding?.totalUnits || 0}
+                      disabled
+                      readOnly
+                    />
+                    <Form.Text className="text-muted">
+                      This is automatically calculated based on units added to this building
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              )}
+              <Col md={isEdit ? 12 : 6}>
                 <Form.Group>
                   <Form.Label>Owner <span className="text-danger">*</span></Form.Label>
                   <Form.Select
