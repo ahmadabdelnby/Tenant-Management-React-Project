@@ -131,15 +131,6 @@ const BuildingsList = () => {
                           : 'N/A'}
                       </td>
                       <td>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="text-info p-1"
-                          onClick={() => navigate(`/buildings/${building.id}`)}
-                          title="View"
-                        >
-                          <i className="bi bi-eye"></i>
-                        </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button

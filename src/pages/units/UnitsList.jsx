@@ -160,15 +160,6 @@ const UnitsList = () => {
                         <Badge bg={getStatusBadge(unit.status)}>{unit.status}</Badge>
                       </td>
                       <td>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="text-info p-1"
-                          onClick={() => navigate(`/units/${unit.id}`)}
-                          title="View"
-                        >
-                          <i className="bi bi-eye"></i>
-                        </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button

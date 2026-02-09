@@ -146,15 +146,6 @@ const TenanciesList = () => {
                         </Badge>
                       </td>
                       <td>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="text-info p-1"
-                          onClick={() => navigate(`/tenancies/${tenancy.id}`)}
-                          title="View"
-                        >
-                          <i className="bi bi-eye"></i>
-                        </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button
