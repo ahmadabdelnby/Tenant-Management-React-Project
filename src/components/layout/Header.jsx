@@ -29,17 +29,6 @@ const Header = ({ onToggleSidebar }) => {
 
       {/* Right Side */}
       <div className="d-flex align-items-center gap-3">
-        {/* Notifications */}
-        <button className="btn btn-link text-dark position-relative p-0">
-          <i className="bi bi-bell fs-5"></i>
-          <span 
-            className="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-            style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--navy-dark)', fontSize: '10px' }}
-          >
-            3
-          </span>
-        </button>
-
         {/* User Dropdown */}
         <Dropdown align="end">
           <Dropdown.Toggle 
@@ -64,10 +53,6 @@ const Header = ({ onToggleSidebar }) => {
             <Dropdown.Item onClick={() => navigate('/profile')}>
               <i className="bi bi-person me-2"></i>
               My Profile
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => navigate('/profile')}>
-              <i className="bi bi-gear me-2"></i>
-              Settings
             </Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item onClick={handleLogout} className="text-danger">
