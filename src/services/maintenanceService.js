@@ -42,6 +42,20 @@ const maintenanceService = {
   delete: async (id) => {
     return api.delete(`/maintenance/${id}`);
   },
+
+  // Export maintenance requests to Excel (returns blob)
+  exportExcel: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/maintenance/export${queryString ? `?${queryString}` : ''}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to export maintenance report');
+    return response.blob();
+  },
 };
 
 export default maintenanceService;

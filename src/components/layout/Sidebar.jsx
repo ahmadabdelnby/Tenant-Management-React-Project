@@ -54,6 +54,18 @@ const Sidebar = ({ isOpen, onToggle }) => {
       label: 'Maintenance',
       roles: ['ADMIN', 'OWNER', 'TENANT'],
     },
+    {
+      path: '/payments',
+      icon: 'bi-cash-stack',
+      label: 'Payments',
+      roles: ['ADMIN', 'OWNER', 'TENANT'],
+    },
+    {
+      path: '/payments/building-summary',
+      icon: 'bi-bar-chart-line',
+      label: 'Payment Summary',
+      roles: ['ADMIN', 'OWNER'],
+    },
   ];
 
   const filteredMenuItems = menuItems.filter(

@@ -9,3 +9,5 @@ export { default as buildingsService } from './buildingsService';
 export { default as unitsService } from './unitsService';
 export { default as tenanciesService } from './tenanciesService';
 export { default as maintenanceService } from './maintenanceService';
+export { default as paymentsService } from './paymentsService';
+export { default as notificationsService } from './notificationsService';

@@ -23,6 +23,9 @@ import {
   MaintenanceList,
   MaintenanceForm,
   MaintenanceDetail,
+  PaymentsList,
+  BuildingPaymentSummary,
+  PaymentResult,
 } from './pages';
 
 // Protected Route Component
@@ -214,6 +217,28 @@ function App() {
                 <MaintenanceForm />
               </ProtectedRoute>
             }
+          />
+
+          {/* Payments - Admin, Owner, Tenant */}
+          <Route
+            path="payments"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER', 'TENANT']}>
+                <PaymentsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="payments/building-summary"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER']}>
+                <BuildingPaymentSummary />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="payments/result"
+            element={<PaymentResult />}
           />
         </Route>
 

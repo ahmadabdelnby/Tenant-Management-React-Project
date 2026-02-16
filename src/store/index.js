@@ -10,6 +10,8 @@ import {
   unitsReducer,
   tenanciesReducer,
   maintenanceReducer,
+  paymentsReducer,
+  notificationsReducer,
   uiReducer,
 } from './slices';
 
@@ -21,6 +23,8 @@ const store = configureStore({
     units: unitsReducer,
     tenancies: tenanciesReducer,
     maintenance: maintenanceReducer,
+    payments: paymentsReducer,
+    notifications: notificationsReducer,
     ui: uiReducer,
   },
   middleware: (getDefaultMiddleware) =>

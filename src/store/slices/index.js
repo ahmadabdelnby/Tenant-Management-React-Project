@@ -8,6 +8,8 @@ export { default as buildingsReducer } from './buildingsSlice';
 export { default as unitsReducer } from './unitsSlice';
 export { default as tenanciesReducer } from './tenanciesSlice';
 export { default as maintenanceReducer } from './maintenanceSlice';
+export { default as paymentsReducer } from './paymentsSlice';
+export { default as notificationsReducer } from './notificationsSlice';
 export { default as uiReducer } from './uiSlice';
 
 // Re-export actions
@@ -17,4 +19,6 @@ export * from './buildingsSlice';
 export * from './unitsSlice';
 export * from './tenanciesSlice';
 export * from './maintenanceSlice';
+export * from './paymentsSlice';
+export * from './notificationsSlice';
 export * from './uiSlice';

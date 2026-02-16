@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
 import { logout } from '../../store/slices/authSlice';
+import NotificationBell from './NotificationBell';
 
 const Header = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ const Header = ({ onToggleSidebar }) => {
 
       {/* Right Side */}
       <div className="d-flex align-items-center gap-3">
+        {/* Notification Bell */}
+        <NotificationBell />
+
         {/* User Dropdown */}
         <Dropdown align="end">
           <Dropdown.Toggle 

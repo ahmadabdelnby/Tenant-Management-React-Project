@@ -7,3 +7,4 @@ export * from './buildings';
 export * from './units';
 export * from './tenancies';
 export * from './maintenance';
+export * from './payments';

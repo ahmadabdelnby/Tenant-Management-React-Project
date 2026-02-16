@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchMaintenanceRequests, deleteMaintenanceRequest, updateMaintenanceRequest } from '../../store/slices/maintenanceSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import maintenanceService from '../../services/maintenanceService';
 
 const MaintenanceList = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const MaintenanceList = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [updateData, setUpdateData] = useState({ status: '', resolutionNotes: '' });
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     dispatch(fetchMaintenanceRequests(filters));
@@ -27,6 +29,30 @@ const MaintenanceList = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      setExporting(true);
+      const params = {};
+      if (filters.status) params.status = filters.status;
+      if (filters.priority) params.priority = filters.priority;
+      if (filters.category) params.category = filters.category;
+      const blob = await maintenanceService.exportExcel(params);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Maintenance_Report_${Date.now()}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      dispatch(showNotification({ type: 'success', message: 'Report exported successfully' }));
+    } catch (error) {
+      dispatch(showNotification({ type: 'error', message: 'Failed to export report' }));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleDelete = (request) => {
@@ -117,12 +143,23 @@ const MaintenanceList = () => {
               : 'View and manage maintenance requests'}
           </p>
         </div>
-        {user?.role === 'TENANT' && (
-          <Button variant="primary" onClick={() => navigate('/maintenance/new')}>
-            <i className="bi bi-plus-lg me-2"></i>
-            New Request
-          </Button>
-        )}
+        <div className="d-flex gap-2">
+          {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
+            <Button variant="success" onClick={handleExportExcel} disabled={exporting}>
+              {exporting ? (
+                <><Spinner animation="border" size="sm" className="me-2" />Exporting...</>
+              ) : (
+                <><i className="bi bi-file-earmark-excel me-2"></i>Export Excel</>
+              )}
+            </Button>
+          )}
+          {user?.role === 'TENANT' && (
+            <Button variant="primary" onClick={() => navigate('/maintenance/new')}>
+              <i className="bi bi-plus-lg me-2"></i>
+              New Request
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
