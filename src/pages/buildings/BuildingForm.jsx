@@ -30,6 +30,7 @@ const BuildingForm = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm();
 
@@ -56,6 +57,7 @@ const BuildingForm = () => {
         city: currentBuilding.city,
         country: currentBuilding.country,
         postalCode: currentBuilding.postalCode || '',
+        mapEmbed: currentBuilding.mapEmbed || '',
         description: currentBuilding.description || '',
         ownerId: currentBuilding.owner?.id,
       });
@@ -227,6 +229,44 @@ const BuildingForm = () => {
                   />
                 </Form.Group>
               </Col>
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label>
+                    <i className="bi bi-geo-alt me-1"></i>
+                    Google Maps Embed
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder='Paste the Google Maps embed iframe code here, e.g.: <iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'
+                    {...register('mapEmbed')}
+                  />
+                  <Form.Text className="text-muted">
+                    Go to Google Maps → Share → Embed a map → Copy the iframe code
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+              {watch('mapEmbed') && (() => {
+                const match = watch('mapEmbed').match(/src=["']([^"']+)["']/);
+                const src = match ? match[1] : null;
+                return src ? (
+                  <Col md={12}>
+                    <Form.Label className="text-muted">Map Preview</Form.Label>
+                    <div className="border rounded overflow-hidden" style={{ height: '300px' }}>
+                      <iframe
+                        src={src}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Map Preview"
+                      />
+                    </div>
+                  </Col>
+                ) : null;
+              })()}
             </Row>
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">

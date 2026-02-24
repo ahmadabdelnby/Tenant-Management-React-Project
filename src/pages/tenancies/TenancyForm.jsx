@@ -14,6 +14,7 @@ import {
   clearCurrentTenancy,
 } from '../../store/slices/tenanciesSlice';
 import { fetchUnits } from '../../store/slices/unitsSlice';
+import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { fetchUsers } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
@@ -25,6 +26,7 @@ const TenancyForm = () => {
 
   const { currentTenancy, isLoading } = useSelector((state) => state.tenancies);
   const { units } = useSelector((state) => state.units);
+  const { buildings } = useSelector((state) => state.buildings);
   const { users } = useSelector((state) => state.users);
 
   const [availableUnits, setAvailableUnits] = useState([]);
@@ -39,10 +41,11 @@ const TenancyForm = () => {
     formState: { errors },
   } = useForm();
 
+  const selectedBuildingId = watch('buildingId');
   const selectedUnitId = watch('unitId');
 
   useEffect(() => {
-    dispatch(fetchUnits({ limit: 100 }));
+    dispatch(fetchBuildings({ limit: 100 }));
     dispatch(fetchUsers({ role: 'TENANT', limit: 100 }));
     if (isEdit) {
       dispatch(fetchTenancyById(id));
@@ -51,6 +54,25 @@ const TenancyForm = () => {
       dispatch(clearCurrentTenancy());
     };
   }, [dispatch, id, isEdit]);
+
+  // When building is selected, fetch units for that building
+  useEffect(() => {
+    if (selectedBuildingId) {
+      dispatch(fetchUnits({ buildingId: selectedBuildingId, limit: 100 }));
+    }
+  }, [dispatch, selectedBuildingId]);
+
+  // When editing, set the building from the current tenancy
+  useEffect(() => {
+    if (currentTenancy && isEdit) {
+      // Set buildingId first so units load
+      setValue('buildingId', currentTenancy.unit?.buildingId?.toString() || '');
+      // Then fetch units for that building
+      if (currentTenancy.unit?.buildingId) {
+        dispatch(fetchUnits({ buildingId: currentTenancy.unit.buildingId, limit: 100 }));
+      }
+    }
+  }, [currentTenancy, isEdit, setValue, dispatch]);
 
   useEffect(() => {
     // Filter available units or include the current unit in edit mode
@@ -64,6 +86,7 @@ const TenancyForm = () => {
   useEffect(() => {
     if (currentTenancy && isEdit) {
       reset({
+        buildingId: currentTenancy.unit?.buildingId?.toString() || '',
         tenantId: currentTenancy.tenant?.id,
         unitId: currentTenancy.unit?.id,
         startDate: currentTenancy.startDate?.split('T')[0],
@@ -93,7 +116,7 @@ const TenancyForm = () => {
       endDate: data.endDate,
       monthlyRent: parseFloat(data.monthlyRent),
       depositAmount: parseFloat(data.depositAmount),
-      isActive: data.isActive !== undefined ? data.isActive : true,
+      isActive: isEdit ? Boolean(data.isActive) : true,
     };
 
     try {
@@ -155,15 +178,39 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
+                  <Form.Label>Building <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    isInvalid={!!errors.buildingId}
+                    {...register('buildingId', { required: 'Building is required' })}
+                    onChange={(e) => {
+                      setValue('buildingId', e.target.value);
+                      setValue('unitId', '');
+                    }}
+                  >
+                    <option value="">Select a building</option>
+                    {buildings.map((building) => (
+                      <option key={building.id} value={building.id}>
+                        {building.name} — {building.address}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.buildingId?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
                   <Form.Label>Unit <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.unitId}
+                    disabled={!selectedBuildingId}
                     {...register('unitId', { required: 'Unit is required' })}
                   >
-                    <option value="">Select a unit</option>
+                    <option value="">{selectedBuildingId ? 'Select a unit' : 'Select a building first'}</option>
                     {availableUnits.map((unit) => (
                       <option key={unit.id} value={unit.id}>
-                        {unit.unitNumber} - {unit.buildingName || 'Building'} ({unit.type})
+                        {unit.unitNumber} ({unit.type}) — {unit.status}
                       </option>
                     ))}
                   </Form.Select>

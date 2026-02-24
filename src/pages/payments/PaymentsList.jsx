@@ -10,6 +10,7 @@ import {
 import {
   fetchPayments, generateMonthlyPayments, updatePayment, createPaymentLink,
 } from '../../store/slices/paymentsSlice';
+import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import { paymentsService } from '../../services';
 
@@ -22,6 +23,7 @@ const PaymentsList = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { payments, pagination, isLoading } = useSelector((state) => state.payments);
+  const { buildings } = useSelector((state) => state.buildings);
 
   const now = new Date();
   const [filters, setFilters] = useState({
@@ -45,6 +47,8 @@ const PaymentsList = () => {
   const [exporting, setExporting] = useState(false);
   const [creatingLink, setCreatingLink] = useState(null);
 
+  const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
+
   const loadPayments = useCallback(() => {
     const queryFilters = {};
     if (filters.month) queryFilters.month = filters.month;
@@ -53,6 +57,10 @@ const PaymentsList = () => {
     if (filters.buildingId) queryFilters.buildingId = filters.buildingId;
     dispatch(fetchPayments(queryFilters));
   }, [dispatch, filters]);
+
+  useEffect(() => {
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+  }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
     loadPayments();
@@ -160,8 +168,6 @@ const PaymentsList = () => {
     return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
   };
 
-  const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
-
   return (
     <div>
       {/* Page Header */}
@@ -194,7 +200,18 @@ const PaymentsList = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row className="g-3">
-            <Col md={3}>
+            {isAdminOrOwner && (
+              <Col md={3}>
+                <Form.Label className="small text-muted">Building</Form.Label>
+                <Form.Select name="buildingId" value={filters.buildingId} onChange={handleFilterChange}>
+                  <option value="">All Buildings</option>
+                  {buildings?.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
+            <Col md={2}>
               <Form.Label className="small text-muted">Month</Form.Label>
               <Form.Select name="month" value={filters.month} onChange={handleFilterChange}>
                 <option value="">All Months</option>
@@ -212,7 +229,7 @@ const PaymentsList = () => {
                 ))}
               </Form.Select>
             </Col>
-            <Col md={3}>
+            <Col md={2}>
               <Form.Label className="small text-muted">Status</Form.Label>
               <Form.Select name="status" value={filters.status} onChange={handleFilterChange}>
                 <option value="">All Status</option>
@@ -244,7 +261,7 @@ const PaymentsList = () => {
                   <th>Status</th>
                   <th>Method</th>
                   <th>Paid At</th>
-                  {isAdminOrOwner && <th>Actions</th>}
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -287,53 +304,76 @@ const PaymentsList = () => {
                           <small>{new Date(payment.paidAt).toLocaleDateString('en-US')}</small>
                         ) : '-'}
                       </td>
-                      {isAdminOrOwner && (
-                        <td>
+                      <td>
                           <div className="d-flex gap-1">
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="text-primary p-1"
-                              onClick={() => handleUpdateClick(payment)}
-                              title="Update Payment"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </Button>
-                            {payment.status !== 'PAID' && (
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="text-success p-1"
-                                onClick={() => handleCreateLink(payment.id)}
-                                disabled={creatingLink === payment.id}
-                                title="Create Payment Link & Notify"
-                              >
-                                {creatingLink === payment.id ? (
-                                  <Spinner animation="border" size="sm" />
-                                ) : (
-                                  <i className="bi bi-link-45deg"></i>
+                            {isAdminOrOwner && (
+                              <>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-primary p-1"
+                                  onClick={() => handleUpdateClick(payment)}
+                                  title="Update Payment"
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                </Button>
+                                {payment.status !== 'PAID' && (
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-success p-1"
+                                    onClick={() => handleCreateLink(payment.id)}
+                                    disabled={creatingLink === payment.id}
+                                    title="Create Payment Link & Notify"
+                                  >
+                                    {creatingLink === payment.id ? (
+                                      <Spinner animation="border" size="sm" />
+                                    ) : (
+                                      <i className="bi bi-link-45deg"></i>
+                                    )}
+                                  </Button>
                                 )}
+                                {payment.tahseeelPaymentLink && (
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-info p-1"
+                                    onClick={() => window.open(payment.tahseeelPaymentLink, '_blank')}
+                                    title="Open Payment Link"
+                                  >
+                                    <i className="bi bi-box-arrow-up-right"></i>
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                            {user?.role === 'TENANT' && payment.tahseeelPaymentLink && payment.status !== 'PAID' && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => window.open(payment.tahseeelPaymentLink, '_blank')}
+                                title="Pay Now"
+                              >
+                                <i className="bi bi-credit-card me-1"></i>
+                                Pay
                               </Button>
                             )}
-                            {payment.tahseeelPaymentLink && (
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="text-info p-1"
-                                onClick={() => window.open(payment.tahseeelPaymentLink, '_blank')}
-                                title="Open Payment Link"
-                              >
-                                <i className="bi bi-box-arrow-up-right"></i>
-                              </Button>
+                            {user?.role === 'TENANT' && !payment.tahseeelPaymentLink && payment.status !== 'PAID' && (
+                              <span className="text-muted small align-self-center">
+                                <i className="bi bi-clock me-1"></i>Awaiting link
+                              </span>
+                            )}
+                            {user?.role === 'TENANT' && payment.status === 'PAID' && (
+                              <span className="text-success small align-self-center">
+                                <i className="bi bi-check-circle me-1"></i>Paid
+                              </span>
                             )}
                           </div>
                         </td>
-                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={isAdminOrOwner ? 8 : 7} className="text-center py-4 text-muted">
+                    <td colSpan={8} className="text-center py-4 text-muted">
                       <i className="bi bi-cash-stack fs-1 d-block mb-2 opacity-50"></i>
                       No payment records found. 
                       {user?.role === 'ADMIN' && ' Click "Generate Monthly" to create records for the current month.'}

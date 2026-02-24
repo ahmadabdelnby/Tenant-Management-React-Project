@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchTenancies, deleteTenancy } from '../../store/slices/tenanciesSlice';
+import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const TenanciesList = () => {
@@ -14,15 +15,23 @@ const TenanciesList = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { tenancies, isLoading } = useSelector((state) => state.tenancies);
-  const [filters, setFilters] = useState({ isActive: '' });
+  const { buildings } = useSelector((state) => state.buildings);
+  const [filters, setFilters] = useState({ isActive: '', buildingId: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTenancy, setSelectedTenancy] = useState(null);
+
+  const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
+
+  useEffect(() => {
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+  }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
     const queryFilters = {};
     if (filters.isActive !== '') {
       queryFilters.isActive = filters.isActive === 'true';
     }
+    if (filters.buildingId) queryFilters.buildingId = filters.buildingId;
     dispatch(fetchTenancies(queryFilters));
   }, [dispatch, filters]);
 
@@ -76,6 +85,20 @@ const TenanciesList = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row className="g-3">
+            {isAdminOrOwner && (
+              <Col md={3}>
+                <Form.Select
+                  name="buildingId"
+                  value={filters.buildingId}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Buildings</option>
+                  {buildings?.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
             <Col md={3}>
               <Form.Select
                 name="isActive"
@@ -146,6 +169,15 @@ const TenanciesList = () => {
                         </Badge>
                       </td>
                       <td>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="text-info p-1"
+                          onClick={() => navigate(`/tenancies/${tenancy.id}`)}
+                          title="View"
+                        >
+                          <i className="bi bi-eye"></i>
+                        </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button

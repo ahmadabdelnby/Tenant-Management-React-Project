@@ -16,10 +16,12 @@ import {
   UserForm,
   BuildingsList,
   BuildingForm,
+  BuildingDetails,
   UnitsList,
   UnitForm,
   TenanciesList,
   TenancyForm,
+  TenancyDetail,
   MaintenanceList,
   MaintenanceForm,
   MaintenanceDetail,
@@ -136,12 +138,20 @@ function App() {
             }
           />
 
-          {/* Buildings - Admin & Owner */}
+          {/* Buildings - Admin, Owner & Tenant */}
           <Route
             path="buildings"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER', 'TENANT']}>
                 <BuildingsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="buildings/:id"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER', 'TENANT']}>
+                <BuildingDetails />
               </ProtectedRoute>
             }
           />
@@ -162,11 +172,11 @@ function App() {
             }
           />
 
-          {/* Units - Admin & Owner */}
+          {/* Units - Admin, Owner & Tenant */}
           <Route
             path="units"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OWNER', 'TENANT']}>
                 <UnitsList />
               </ProtectedRoute>
             }
@@ -190,6 +200,7 @@ function App() {
 
           {/* Tenancies - All authenticated users */}
           <Route path="tenancies" element={<TenanciesList />} />
+          <Route path="tenancies/:id" element={<TenancyDetail />} />
           <Route
             path="tenancies/new"
             element={

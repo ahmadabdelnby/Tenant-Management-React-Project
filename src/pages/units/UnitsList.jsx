@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import { fetchUnits, deleteUnit } from '../../store/slices/unitsSlice';
+import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const UnitsList = () => {
@@ -14,9 +15,16 @@ const UnitsList = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { units, isLoading } = useSelector((state) => state.units);
-  const [filters, setFilters] = useState({ status: '', type: '' });
+  const { buildings } = useSelector((state) => state.buildings);
+  const [filters, setFilters] = useState({ status: '', type: '', buildingId: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
+
+  const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
+
+  useEffect(() => {
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+  }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
     dispatch(fetchUnits(filters));
@@ -45,8 +53,8 @@ const UnitsList = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'AVAILABLE': return 'success';
-      case 'OCCUPIED': return 'info';
-      case 'MAINTENANCE': return 'warning';
+      case 'RENTED': return 'primary';
+      case 'UNAVAILABLE': return 'secondary';
       default: return 'secondary';
     }
   };
@@ -75,6 +83,20 @@ const UnitsList = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row className="g-3">
+            {isAdminOrOwner && (
+              <Col md={3}>
+                <Form.Select
+                  name="buildingId"
+                  value={filters.buildingId}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Buildings</option>
+                  {buildings?.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
             <Col md={3}>
               <Form.Select
                 name="status"
@@ -83,8 +105,8 @@ const UnitsList = () => {
               >
                 <option value="">All Status</option>
                 <option value="AVAILABLE">Available</option>
-                <option value="OCCUPIED">Occupied</option>
-                <option value="MAINTENANCE">Maintenance</option>
+                <option value="RENTED">Rented</option>
+                <option value="UNAVAILABLE">Unavailable</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -160,6 +182,15 @@ const UnitsList = () => {
                         <Badge bg={getStatusBadge(unit.status)}>{unit.status}</Badge>
                       </td>
                       <td>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="text-info p-1"
+                          onClick={() => navigate(`/buildings/${unit.buildingId || unit.building?.id}`)}
+                          title="View Building"
+                        >
+                          <i className="bi bi-eye"></i>
+                        </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button

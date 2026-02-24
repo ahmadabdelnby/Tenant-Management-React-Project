@@ -253,12 +253,24 @@ const UnitForm = () => {
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Status</Form.Label>
-                    <Form.Select {...register('status')}>
-                      <option value="AVAILABLE">Available</option>
-                      <option value="RENTED">Rented</option>
-                      <option value="OCCUPIED">Occupied</option>
-                      <option value="MAINTENANCE">Maintenance</option>
-                    </Form.Select>
+                    {currentUnit?.status === 'RENTED' ? (
+                      <>
+                        <Form.Control
+                          type="text"
+                          value="Rented (managed by tenancy)"
+                          disabled
+                          className="bg-light"
+                        />
+                        <Form.Text className="text-muted">
+                          To change status, end or delete the active tenancy
+                        </Form.Text>
+                      </>
+                    ) : (
+                      <Form.Select {...register('status')}>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="UNAVAILABLE">Unavailable</option>
+                      </Form.Select>
+                    )}
                   </Form.Group>
                 </Col>
               )}

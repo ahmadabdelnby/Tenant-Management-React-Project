@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchMaintenanceRequests, deleteMaintenanceRequest, updateMaintenanceRequest } from '../../store/slices/maintenanceSlice';
+import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import maintenanceService from '../../services/maintenanceService';
 
@@ -15,12 +16,19 @@ const MaintenanceList = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { requests, isLoading } = useSelector((state) => state.maintenance);
-  const [filters, setFilters] = useState({ status: '', priority: '', category: '' });
+  const { buildings } = useSelector((state) => state.buildings);
+  const [filters, setFilters] = useState({ status: '', priority: '', category: '', buildingId: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [updateData, setUpdateData] = useState({ status: '', resolutionNotes: '' });
   const [exporting, setExporting] = useState(false);
+
+  const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
+
+  useEffect(() => {
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+  }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
     dispatch(fetchMaintenanceRequests(filters));
@@ -38,6 +46,7 @@ const MaintenanceList = () => {
       if (filters.status) params.status = filters.status;
       if (filters.priority) params.priority = filters.priority;
       if (filters.category) params.category = filters.category;
+      if (filters.buildingId) params.buildingId = filters.buildingId;
       const blob = await maintenanceService.exportExcel(params);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -166,6 +175,20 @@ const MaintenanceList = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row className="g-3">
+            {isAdminOrOwner && (
+              <Col md={3}>
+                <Form.Select
+                  name="buildingId"
+                  value={filters.buildingId}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Buildings</option>
+                  {buildings?.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
             <Col md={3}>
               <Form.Select
                 name="status"

@@ -53,6 +53,8 @@ const NotificationBell = () => {
       } else {
         navigate(notification.link);
       }
+    } else {
+      navigate('/payments');
     }
     setIsOpen(false);
   };
