@@ -5,11 +5,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import { fetchBuildings, deleteBuilding } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const BuildingsList = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -17,6 +19,8 @@ const BuildingsList = () => {
   const [filters, setFilters] = useState({ search: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
+
+  const isAr = i18n.language?.startsWith('ar');
 
   useEffect(() => {
     dispatch(fetchBuildings(filters));
@@ -35,25 +39,28 @@ const BuildingsList = () => {
   const confirmDelete = async () => {
     try {
       await dispatch(deleteBuilding(selectedBuilding.id)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Building deleted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.building_deleted') }));
       setShowDeleteModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
     }
   };
 
+  // Helper to get localized building name
+  const getBuildingName = (building) => isAr ? building.nameAr : building.nameEn;
+
   return (
     <div>
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1>Buildings</h1>
-          <p className="mb-0">Manage your properties</p>
+          <h1>{t('buildings.title')}</h1>
+          <p className="mb-0">{t('buildings.subtitle')}</p>
         </div>
         {user?.role === 'ADMIN' && (
           <Button variant="primary" onClick={() => navigate('/buildings/new')}>
             <i className="bi bi-plus-lg me-2"></i>
-            Add Building
+            {t('buildings.add_building')}
           </Button>
         )}
       </div>
@@ -70,7 +77,7 @@ const BuildingsList = () => {
                 <Form.Control
                   type="text"
                   name="search"
-                  placeholder="Search buildings..."
+                  placeholder={t('buildings.search_placeholder')}
                   value={filters.search}
                   onChange={handleFilterChange}
                 />
@@ -91,12 +98,12 @@ const BuildingsList = () => {
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>Building</th>
-                  <th>Address</th>
-                  <th>City</th>
-                  <th>Units</th>
-                  <th>Owner</th>
-                  <th>Actions</th>
+                  <th>{t('buildings.building_col')}</th>
+                  <th>{t('buildings.address_col')}</th>
+                  <th>{t('buildings.city_col')}</th>
+                  <th>{t('buildings.units_col')}</th>
+                  <th>{t('buildings.owner_col')}</th>
+                  <th>{t('buildings.actions_col')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,18 +124,18 @@ const BuildingsList = () => {
                           >
                             <i className="bi bi-building"></i>
                           </div>
-                          <div className="fw-semibold">{building.name}</div>
+                          <div className="fw-semibold">{getBuildingName(building)}</div>
                         </div>
                       </td>
                       <td>{building.address}</td>
                       <td>{building.city}</td>
                       <td>
-                        <Badge bg="secondary">{building.totalUnits || 0} units</Badge>
+                        <Badge bg="secondary">{t('buildings.units_badge', { count: building.totalUnits || 0 })}</Badge>
                       </td>
                       <td>
                         {building.owner 
                           ? `${building.owner.firstName} ${building.owner.lastName}`
-                          : 'N/A'}
+                          : t('common.na')}
                       </td>
                       <td>
                         <Button
@@ -136,7 +143,7 @@ const BuildingsList = () => {
                           size="sm"
                           className="text-info p-1"
                           onClick={() => navigate(`/buildings/${building.id}`)}
-                          title="View"
+                          title={t('buildings.view')}
                         >
                           <i className="bi bi-eye"></i>
                         </Button>
@@ -147,7 +154,7 @@ const BuildingsList = () => {
                               size="sm"
                               className="text-primary p-1"
                               onClick={() => navigate(`/buildings/${building.id}/edit`)}
-                              title="Edit"
+                              title={t('buildings.edit')}
                             >
                               <i className="bi bi-pencil"></i>
                             </Button>
@@ -156,7 +163,7 @@ const BuildingsList = () => {
                               size="sm"
                               className="text-danger p-1"
                               onClick={() => handleDelete(building)}
-                              title="Delete"
+                              title={t('buildings.delete')}
                             >
                               <i className="bi bi-trash"></i>
                             </Button>
@@ -168,7 +175,7 @@ const BuildingsList = () => {
                 ) : (
                   <tr>
                     <td colSpan="6" className="text-center py-4 text-muted">
-                      No buildings found
+                      {t('buildings.no_buildings')}
                     </td>
                   </tr>
                 )}
@@ -181,18 +188,19 @@ const BuildingsList = () => {
       {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Delete Building</Modal.Title>
+          <Modal.Title>{t('buildings.delete_title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete <strong>{selectedBuilding?.name}</strong>?
-          This action cannot be undone.
+          <span dangerouslySetInnerHTML={{
+            __html: t('buildings.delete_confirm', { name: selectedBuilding ? getBuildingName(selectedBuilding) : '' })
+          }} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Delete
+            {t('common.delete')}
           </Button>
         </Modal.Footer>
       </Modal>

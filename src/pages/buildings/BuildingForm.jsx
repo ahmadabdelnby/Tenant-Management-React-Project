@@ -2,10 +2,11 @@
 // Building Form Page (Create/Edit) - Bootstrap Version
 // ============================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createBuilding,
@@ -15,8 +16,10 @@ import {
 } from '../../store/slices/buildingsSlice';
 import { fetchUsers } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import LocationPicker from '../../components/maps/LocationPicker';
 
 const BuildingForm = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -25,6 +28,7 @@ const BuildingForm = () => {
   const { currentBuilding, isLoading } = useSelector((state) => state.buildings);
   const { users } = useSelector((state) => state.users);
   const [owners, setOwners] = useState([]);
+  const [location, setLocation] = useState({ lat: null, lng: null });
 
   const {
     register,
@@ -52,31 +56,42 @@ const BuildingForm = () => {
   useEffect(() => {
     if (currentBuilding && isEdit) {
       reset({
-        name: currentBuilding.name,
+        nameEn: currentBuilding.nameEn || '',
+        nameAr: currentBuilding.nameAr || '',
         address: currentBuilding.address,
         city: currentBuilding.city,
         country: currentBuilding.country,
         postalCode: currentBuilding.postalCode || '',
         mapEmbed: currentBuilding.mapEmbed || '',
-        description: currentBuilding.description || '',
+        descriptionEn: currentBuilding.descriptionEn || '',
+        descriptionAr: currentBuilding.descriptionAr || '',
         ownerId: currentBuilding.owner?.id,
       });
+      if (currentBuilding.latitude && currentBuilding.longitude) {
+        setLocation({ lat: currentBuilding.latitude, lng: currentBuilding.longitude });
+      }
     }
   }, [currentBuilding, isEdit, reset]);
+
+  const handleLocationSelect = useCallback(({ lat, lng }) => {
+    setLocation({ lat, lng });
+  }, []);
 
   const onSubmit = async (data) => {
     const formData = {
       ...data,
       ownerId: parseInt(data.ownerId),
+      latitude: location.lat,
+      longitude: location.lng,
     };
 
     try {
       if (isEdit) {
         await dispatch(updateBuilding({ id, data: formData })).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Building updated successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.building_updated') }));
       } else {
         await dispatch(createBuilding(formData)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Building created successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.building_created') }));
       }
       navigate('/buildings');
     } catch (error) {
@@ -95,11 +110,11 @@ const BuildingForm = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Buildings
+          {t('buildings.back_to_buildings')}
         </Button>
         <div className="page-header mb-0">
-          <h1>{isEdit ? 'Edit Building' : 'Create Building'}</h1>
-          <p className="mb-0">{isEdit ? 'Update building information' : 'Add a new property'}</p>
+          <h1>{isEdit ? t('buildings.edit_title') : t('buildings.create_title')}</h1>
+          <p className="mb-0">{isEdit ? t('buildings.edit_subtitle') : t('buildings.create_subtitle')}</p>
         </div>
       </div>
 
@@ -108,32 +123,53 @@ const BuildingForm = () => {
         <Card.Body>
           <Form onSubmit={handleSubmit(onSubmit)}>
             <Row className="g-3">
-              <Col md={12}>
+              {/* Building Name (English) */}
+              <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Building Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.building_name_en')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., Sunrise Tower"
-                    isInvalid={!!errors.name}
-                    {...register('name', {
-                      required: 'Building name is required',
-                      minLength: { value: 2, message: 'Min 2 characters' },
+                    dir="ltr"
+                    placeholder={t('buildings.building_name_en_placeholder')}
+                    isInvalid={!!errors.nameEn}
+                    {...register('nameEn', {
+                      required: t('common.name_en_required'),
+                      minLength: { value: 2, message: t('common.min_chars', { count: 2 }) },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.name?.message}
+                    {errors.nameEn?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              {/* Building Name (Arabic) */}
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>{t('buildings.building_name_ar')} <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    dir="rtl"
+                    placeholder={t('buildings.building_name_ar_placeholder')}
+                    isInvalid={!!errors.nameAr}
+                    {...register('nameAr', {
+                      required: t('common.name_ar_required'),
+                      minLength: { value: 2, message: t('common.min_chars', { count: 2 }) },
+                    })}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.nameAr?.message}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Address <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.address_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., 123 Main Street"
+                    placeholder={t('buildings.address_placeholder')}
                     isInvalid={!!errors.address}
                     {...register('address', {
-                      required: 'Address is required',
+                      required: t('buildings.address_label') + ' is required',
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -143,13 +179,13 @@ const BuildingForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>City <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.city_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., Cairo"
+                    placeholder={t('buildings.city_placeholder')}
                     isInvalid={!!errors.city}
                     {...register('city', {
-                      required: 'City is required',
+                      required: t('buildings.city_label') + ' is required',
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -159,13 +195,13 @@ const BuildingForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Country <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.country_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., Egypt"
+                    placeholder={t('buildings.country_placeholder')}
                     isInvalid={!!errors.country}
                     {...register('country', {
-                      required: 'Country is required',
+                      required: t('buildings.country_label') + ' is required',
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -175,10 +211,10 @@ const BuildingForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Postal Code</Form.Label>
+                  <Form.Label>{t('buildings.postal_code_label')}</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., 11511"
+                    placeholder={t('buildings.postal_code_placeholder')}
                     {...register('postalCode')}
                   />
                 </Form.Group>
@@ -186,7 +222,7 @@ const BuildingForm = () => {
               {isEdit && (
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Total Units</Form.Label>
+                    <Form.Label>{t('buildings.total_units_label')}</Form.Label>
                     <Form.Control
                       type="text"
                       value={currentBuilding?.totalUnits || 0}
@@ -194,19 +230,19 @@ const BuildingForm = () => {
                       readOnly
                     />
                     <Form.Text className="text-muted">
-                      This is automatically calculated based on units added to this building
+                      {t('buildings.total_units_note')}
                     </Form.Text>
                   </Form.Group>
                 </Col>
               )}
               <Col md={isEdit ? 12 : 6}>
                 <Form.Group>
-                  <Form.Label>Owner <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.owner_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.ownerId}
-                    {...register('ownerId', { required: 'Owner is required' })}
+                    {...register('ownerId', { required: t('buildings.owner_label') + ' is required' })}
                   >
-                    <option value="">Select owner</option>
+                    <option value="">{t('buildings.select_owner')}</option>
                     {owners.map((owner) => (
                       <option key={owner.id} value={owner.id}>
                         {owner.firstName} {owner.lastName}
@@ -218,14 +254,29 @@ const BuildingForm = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={12}>
+              {/* Description (English) */}
+              <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Description</Form.Label>
+                  <Form.Label>{t('buildings.description_en')}</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    placeholder="Building description..."
-                    {...register('description')}
+                    dir="ltr"
+                    placeholder={t('buildings.description_en_placeholder')}
+                    {...register('descriptionEn')}
+                  />
+                </Form.Group>
+              </Col>
+              {/* Description (Arabic) */}
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>{t('buildings.description_ar')}</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    dir="rtl"
+                    placeholder={t('buildings.description_ar_placeholder')}
+                    {...register('descriptionAr')}
                   />
                 </Form.Group>
               </Col>
@@ -233,54 +284,29 @@ const BuildingForm = () => {
                 <Form.Group>
                   <Form.Label>
                     <i className="bi bi-geo-alt me-1"></i>
-                    Google Maps Embed
+                    {t('buildings.building_location')}
                   </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    placeholder='Paste the Google Maps embed iframe code here, e.g.: <iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'
-                    {...register('mapEmbed')}
+                  <LocationPicker
+                    latitude={location.lat}
+                    longitude={location.lng}
+                    onLocationSelect={handleLocationSelect}
                   />
-                  <Form.Text className="text-muted">
-                    Go to Google Maps → Share → Embed a map → Copy the iframe code
-                  </Form.Text>
                 </Form.Group>
               </Col>
-              {watch('mapEmbed') && (() => {
-                const match = watch('mapEmbed').match(/src=["']([^"']+)["']/);
-                const src = match ? match[1] : null;
-                return src ? (
-                  <Col md={12}>
-                    <Form.Label className="text-muted">Map Preview</Form.Label>
-                    <div className="border rounded overflow-hidden" style={{ height: '300px' }}>
-                      <iframe
-                        src={src}
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Map Preview"
-                      />
-                    </div>
-                  </Col>
-                ) : null;
-              })()}
             </Row>
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <Button variant="secondary" onClick={() => navigate('/buildings')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    {isEdit ? 'Updating...' : 'Creating...'}
+                    {isEdit ? t('buildings.updating') : t('buildings.creating')}
                   </>
                 ) : (
-                  isEdit ? 'Update Building' : 'Create Building'
+                  isEdit ? t('buildings.update_btn') : t('buildings.create_btn')
                 )}
               </Button>
             </div>

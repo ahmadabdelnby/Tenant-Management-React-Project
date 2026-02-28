@@ -5,10 +5,13 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { fetchMaintenanceById, clearCurrentRequest } from '../../store/slices/maintenanceSlice';
 
 const MaintenanceDetail = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -55,7 +58,7 @@ const MaintenanceDetail = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-EG', {
+    return new Date(dateString).toLocaleDateString(isAr ? 'ar-KW' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -75,9 +78,9 @@ const MaintenanceDetail = () => {
   if (!currentRequest) {
     return (
       <div className="text-center py-5">
-        <h4>Request not found</h4>
+        <h4>{t('maintenance.request_not_found')}</h4>
         <Button variant="primary" onClick={() => navigate('/maintenance')}>
-          Back to Requests
+          {t('maintenance.back_to_requests')}
         </Button>
       </div>
     );
@@ -94,21 +97,21 @@ const MaintenanceDetail = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Requests
+          {t('maintenance.back_to_requests')}
         </Button>
         <div className="d-flex justify-content-between align-items-start">
           <div className="page-header mb-0">
             <h1>{currentRequest.title}</h1>
             <div className="d-flex gap-2 mt-2">
               <Badge bg={getStatusBadge(currentRequest.status)}>
-                {currentRequest.status?.replace('_', ' ')}
+                {t(`maintenance.status_${currentRequest.status?.toLowerCase()}`)}
               </Badge>
               <Badge bg={getPriorityBadge(currentRequest.priority)}>
-                {currentRequest.priority} Priority
+                {t(`maintenance.priority_${currentRequest.priority?.toLowerCase()}`)} {t('maintenance.priority')}
               </Badge>
               <Badge bg="dark">
                 <i className={`bi ${getCategoryIcon(currentRequest.category)} me-1`}></i>
-                {currentRequest.category}
+                {t(`maintenance.cat_${currentRequest.category?.toLowerCase()}`)}
               </Badge>
             </div>
           </div>
@@ -120,10 +123,10 @@ const MaintenanceDetail = () => {
         <Col lg={8}>
           <Card className="mb-4">
             <Card.Header>
-              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Request Details</h5>
+              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('maintenance.request_details')}</h5>
             </Card.Header>
             <Card.Body>
-              <h6 className="text-muted mb-2">Description</h6>
+              <h6 className="text-muted mb-2">{t('maintenance.description')}</h6>
               <p style={{ whiteSpace: 'pre-wrap' }}>{currentRequest.description}</p>
             </Card.Body>
           </Card>
@@ -134,7 +137,7 @@ const MaintenanceDetail = () => {
               <Card.Header className="bg-success text-white">
                 <h5 className="mb-0">
                   <i className="bi bi-check-circle me-2"></i>
-                  Resolution
+                  {t('maintenance.resolution')}
                 </h5>
               </Card.Header>
               <Card.Body>
@@ -142,10 +145,10 @@ const MaintenanceDetail = () => {
                 {currentRequest.resolvedBy && (
                   <div className="text-muted small mt-3">
                     <i className="bi bi-person me-1"></i>
-                    Resolved by: {currentRequest.resolvedBy.name}
+                    {t('maintenance.resolved_by')}: {currentRequest.resolvedBy.name}
                     <br />
                     <i className="bi bi-calendar me-1"></i>
-                    Resolved on: {formatDate(currentRequest.resolvedAt)}
+                    {t('maintenance.resolved_on')}: {formatDate(currentRequest.resolvedAt)}
                   </div>
                 )}
               </Card.Body>
@@ -158,15 +161,15 @@ const MaintenanceDetail = () => {
           {/* Unit Info */}
           <Card className="mb-4">
             <Card.Header>
-              <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Unit Information</h6>
+              <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('maintenance.unit_info')}</h6>
             </Card.Header>
             <Card.Body>
               <div className="mb-3">
-                <small className="text-muted d-block">Unit Number</small>
+                <small className="text-muted d-block">{t('tenancies.unit_number')}</small>
                 <span className="fw-semibold">{currentRequest.unit?.unitNumber}</span>
               </div>
               <div>
-                <small className="text-muted d-block">Building</small>
+                <small className="text-muted d-block">{t('tenancies.building')}</small>
                 <span className="fw-semibold">{currentRequest.unit?.buildingName}</span>
               </div>
             </Card.Body>
@@ -176,7 +179,7 @@ const MaintenanceDetail = () => {
           {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
             <Card className="mb-4">
               <Card.Header>
-                <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Tenant Information</h6>
+                <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('maintenance.tenant_info')}</h6>
               </Card.Header>
               <Card.Body>
                 <div className="d-flex align-items-center mb-3">
@@ -190,14 +193,14 @@ const MaintenanceDetail = () => {
                   </div>
                 </div>
                 <div className="mb-2">
-                  <small className="text-muted d-block">Email</small>
+                  <small className="text-muted d-block">{t('users.email')}</small>
                   <a href={`mailto:${currentRequest.tenant?.email}`}>
                     {currentRequest.tenant?.email}
                   </a>
                 </div>
                 {currentRequest.tenant?.phone && (
                   <div>
-                    <small className="text-muted d-block">Phone</small>
+                    <small className="text-muted d-block">{t('users.phone')}</small>
                     <a href={`tel:${currentRequest.tenant?.phone}`}>
                       {currentRequest.tenant?.phone}
                     </a>
@@ -210,22 +213,22 @@ const MaintenanceDetail = () => {
           {/* Timeline */}
           <Card>
             <Card.Header>
-              <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Timeline</h6>
+              <h6 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('maintenance.timeline')}</h6>
             </Card.Header>
             <Card.Body>
               <div className="mb-3">
-                <small className="text-muted d-block">Submitted</small>
+                <small className="text-muted d-block">{t('maintenance.submitted')}</small>
                 <span>{formatDate(currentRequest.createdAt)}</span>
               </div>
               {currentRequest.updatedAt !== currentRequest.createdAt && (
                 <div className="mb-3">
-                  <small className="text-muted d-block">Last Updated</small>
+                  <small className="text-muted d-block">{t('maintenance.last_updated')}</small>
                   <span>{formatDate(currentRequest.updatedAt)}</span>
                 </div>
               )}
               {currentRequest.resolvedAt && (
                 <div>
-                  <small className="text-muted d-block">Resolved</small>
+                  <small className="text-muted d-block">{t('maintenance.resolved')}</small>
                   <span className="text-success">{formatDate(currentRequest.resolvedAt)}</span>
                 </div>
               )}

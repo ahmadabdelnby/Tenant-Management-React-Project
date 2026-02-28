@@ -5,6 +5,7 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Row, Col, Card, Table, Button } from 'react-bootstrap';
 import { fetchBuildings } from '../store/slices/buildingsSlice';
 import { fetchUnits } from '../store/slices/unitsSlice';
@@ -12,6 +13,7 @@ import { fetchTenancies } from '../store/slices/tenanciesSlice';
 import { fetchUsers } from '../store/slices/usersSlice';
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -21,7 +23,6 @@ const Dashboard = () => {
   const { users } = useSelector((state) => state.users);
 
   useEffect(() => {
-    // Fetch data based on user role
     if (user?.role === 'ADMIN' || user?.role === 'OWNER') {
       dispatch(fetchBuildings());
       dispatch(fetchUnits());
@@ -34,7 +35,7 @@ const Dashboard = () => {
 
   const statsCards = [
     {
-      title: 'Total Buildings',
+      titleKey: 'dashboard.total_buildings',
       value: buildings.length || 0,
       icon: 'bi-building',
       color: 'primary',
@@ -42,7 +43,7 @@ const Dashboard = () => {
       roles: ['ADMIN', 'OWNER'],
     },
     {
-      title: 'Total Units',
+      titleKey: 'dashboard.total_units',
       value: units.length || 0,
       icon: 'bi-door-open',
       color: 'secondary',
@@ -50,15 +51,15 @@ const Dashboard = () => {
       roles: ['ADMIN', 'OWNER'],
     },
     {
-      title: 'Active Tenancies',
-      value: tenancies.filter(t => t.isActive).length || 0,
+      titleKey: 'dashboard.active_tenancies',
+      value: tenancies.filter(tn => tn.isActive).length || 0,
       icon: 'bi-file-earmark-text',
       color: 'success',
       link: '/tenancies',
       roles: ['ADMIN', 'OWNER', 'TENANT'],
     },
     {
-      title: 'Total Users',
+      titleKey: 'dashboard.total_users',
       value: users.length || 0,
       icon: 'bi-people',
       color: 'info',
@@ -71,22 +72,12 @@ const Dashboard = () => {
 
   const recentTenancies = tenancies.slice(0, 5);
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'ACTIVE': return 'success';
-      case 'PENDING': return 'warning';
-      case 'EXPIRED': return 'secondary';
-      case 'TERMINATED': return 'danger';
-      default: return 'secondary';
-    }
-  };
-
   return (
     <div>
       {/* Page Header */}
       <div className="page-header">
-        <h1>Dashboard</h1>
-        <p>Welcome back, {user?.firstName}! Here's what's happening.</p>
+        <h1>{t('dashboard.title')}</h1>
+        <p>{t('dashboard.welcome', { name: user?.firstName })}</p>
       </div>
 
       {/* Stats Cards */}
@@ -96,7 +87,7 @@ const Dashboard = () => {
             <div className="stats-card">
               <div className="d-flex justify-content-between align-items-start">
                 <div>
-                  <p className="text-muted mb-1" style={{ fontSize: '14px' }}>{stat.title}</p>
+                  <p className="text-muted mb-1" style={{ fontSize: '14px' }}>{t(stat.titleKey)}</p>
                   <h3 className="mb-0 fw-bold" style={{ color: 'var(--navy-dark)' }}>{stat.value}</h3>
                 </div>
                 <div className={`icon ${stat.color === 'primary' ? 'primary' : 'secondary'}`}>
@@ -109,7 +100,7 @@ const Dashboard = () => {
                 style={{ color: 'var(--bs-primary)' }}
                 onClick={() => navigate(stat.link)}
               >
-                View all <i className="bi bi-arrow-right"></i>
+                {t('dashboard.view_all')} <i className="bi bi-arrow-right"></i>
               </Button>
             </div>
           </Col>
@@ -121,23 +112,23 @@ const Dashboard = () => {
         <Col lg={8}>
           <Card>
             <Card.Header className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Recent Tenancies</h5>
+              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('dashboard.recent_tenancies')}</h5>
               <Button 
                 variant="outline-primary" 
                 size="sm"
                 onClick={() => navigate('/tenancies')}
               >
-                View All
+                {t('dashboard.view_all')}
               </Button>
             </Card.Header>
             <Card.Body className="p-0">
               <Table hover responsive className="mb-0">
                 <thead>
                   <tr>
-                    <th>Tenant</th>
-                    <th>Unit</th>
-                    <th>Rent</th>
-                    <th>Status</th>
+                    <th>{t('dashboard.tenant')}</th>
+                    <th>{t('dashboard.unit')}</th>
+                    <th>{t('tenancies.rent_col')}</th>
+                    <th>{t('dashboard.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,10 +144,10 @@ const Dashboard = () => {
                           </div>
                         </td>
                         <td>{tenancy.unit?.unitNumber}</td>
-                        <td>{tenancy.monthlyRent?.toLocaleString()} EGP</td>
+                        <td>{tenancy.monthlyRent?.toLocaleString()} {t('common.kwd')}</td>
                         <td>
                           <span className={`badge bg-${tenancy.isActive ? 'success' : 'secondary'}`}>
-                            {tenancy.isActive ? 'Active' : 'Inactive'}
+                            {tenancy.isActive ? t('users.active') : t('users.inactive')}
                           </span>
                         </td>
                       </tr>
@@ -164,7 +155,7 @@ const Dashboard = () => {
                   ) : (
                     <tr>
                       <td colSpan="4" className="text-center py-4 text-muted">
-                        No tenancies found
+                        {t('dashboard.no_recent_tenancies')}
                       </td>
                     </tr>
                   )}
@@ -178,7 +169,7 @@ const Dashboard = () => {
         <Col lg={4}>
           <Card>
             <Card.Header>
-              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Quick Actions</h5>
+              <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('dashboard.quick_actions')}</h5>
             </Card.Header>
             <Card.Body>
               <div className="d-grid gap-2">
@@ -190,7 +181,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/users/new')}
                     >
                       <i className="bi bi-person-plus me-2"></i>
-                      Add New User
+                      {t('users.add_user')}
                     </Button>
                     <Button 
                       variant="outline-primary" 
@@ -198,7 +189,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/buildings/new')}
                     >
                       <i className="bi bi-building-add me-2"></i>
-                      Add New Building
+                      {t('buildings.add_building')}
                     </Button>
                     <Button 
                       variant="outline-primary" 
@@ -206,7 +197,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/units/new')}
                     >
                       <i className="bi bi-plus-square me-2"></i>
-                      Add New Unit
+                      {t('units.add_unit')}
                     </Button>
                     <Button 
                       variant="outline-primary" 
@@ -214,7 +205,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/tenancies/new')}
                     >
                       <i className="bi bi-file-earmark-plus me-2"></i>
-                      Create Tenancy
+                      {t('tenancies.add_tenancy')}
                     </Button>
                   </>
                 )}
@@ -226,7 +217,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/buildings')}
                     >
                       <i className="bi bi-building me-2"></i>
-                      View My Buildings
+                      {t('sidebar.buildings')}
                     </Button>
                     <Button 
                       variant="outline-primary" 
@@ -234,7 +225,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/units')}
                     >
                       <i className="bi bi-door-open me-2"></i>
-                      View My Units
+                      {t('sidebar.units')}
                     </Button>
                   </>
                 )}
@@ -246,7 +237,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/tenancies')}
                     >
                       <i className="bi bi-file-earmark-text me-2"></i>
-                      My Tenancy
+                      {t('sidebar.tenancies')}
                     </Button>
                     <Button 
                       variant="outline-primary" 
@@ -254,7 +245,7 @@ const Dashboard = () => {
                       onClick={() => navigate('/profile')}
                     >
                       <i className="bi bi-person me-2"></i>
-                      My Profile
+                      {t('header.my_profile')}
                     </Button>
                   </>
                 )}

@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchMaintenanceRequests, deleteMaintenanceRequest, updateMaintenanceRequest } from '../../store/slices/maintenanceSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
@@ -12,6 +13,8 @@ import { showNotification } from '../../store/slices/uiSlice';
 import maintenanceService from '../../services/maintenanceService';
 
 const MaintenanceList = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -56,9 +59,9 @@ const MaintenanceList = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      dispatch(showNotification({ type: 'success', message: 'Report exported successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('maintenance.export_success') }));
     } catch (error) {
-      dispatch(showNotification({ type: 'error', message: 'Failed to export report' }));
+      dispatch(showNotification({ type: 'error', message: t('maintenance.export_fail') }));
     } finally {
       setExporting(false);
     }
@@ -72,7 +75,7 @@ const MaintenanceList = () => {
   const confirmDelete = async () => {
     try {
       await dispatch(deleteMaintenanceRequest(selectedRequest.id)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Request deleted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('maintenance.delete_success') }));
       setShowDeleteModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -91,7 +94,7 @@ const MaintenanceList = () => {
         id: selectedRequest.id, 
         data: updateData 
       })).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Request updated successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('maintenance.update_success') }));
       setShowUpdateModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -131,7 +134,7 @@ const MaintenanceList = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-EG', {
+    return new Date(dateString).toLocaleDateString(isAr ? 'ar-KW' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -145,27 +148,27 @@ const MaintenanceList = () => {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1>Maintenance Requests</h1>
+          <h1>{t('maintenance.title')}</h1>
           <p className="mb-0">
             {user?.role === 'TENANT' 
-              ? 'Submit and track your maintenance requests' 
-              : 'View and manage maintenance requests'}
+              ? t('maintenance.tenant_subtitle') 
+              : t('maintenance.admin_subtitle')}
           </p>
         </div>
         <div className="d-flex gap-2">
           {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
             <Button variant="success" onClick={handleExportExcel} disabled={exporting}>
               {exporting ? (
-                <><Spinner animation="border" size="sm" className="me-2" />Exporting...</>
+                <><Spinner animation="border" size="sm" className="me-2" />{t('maintenance.exporting')}...</>
               ) : (
-                <><i className="bi bi-file-earmark-excel me-2"></i>Export Excel</>
+                <><i className="bi bi-file-earmark-excel me-2"></i>{t('maintenance.export_excel')}</>
               )}
             </Button>
           )}
           {user?.role === 'TENANT' && (
             <Button variant="primary" onClick={() => navigate('/maintenance/new')}>
               <i className="bi bi-plus-lg me-2"></i>
-              New Request
+              {t('maintenance.new_request')}
             </Button>
           )}
         </div>
@@ -182,9 +185,9 @@ const MaintenanceList = () => {
                   value={filters.buildingId}
                   onChange={handleFilterChange}
                 >
-                  <option value="">All Buildings</option>
+                  <option value="">{t('maintenance.all_buildings')}</option>
                   {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
                   ))}
                 </Form.Select>
               </Col>
@@ -195,11 +198,11 @@ const MaintenanceList = () => {
                 value={filters.status}
                 onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
-                <option value="PENDING">Pending</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="">{t('maintenance.all_statuses')}</option>
+                <option value="PENDING">{t('maintenance.status_pending')}</option>
+                <option value="IN_PROGRESS">{t('maintenance.status_in_progress')}</option>
+                <option value="COMPLETED">{t('maintenance.status_completed')}</option>
+                <option value="CANCELLED">{t('maintenance.status_cancelled')}</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -208,11 +211,11 @@ const MaintenanceList = () => {
                 value={filters.priority}
                 onChange={handleFilterChange}
               >
-                <option value="">All Priorities</option>
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
+                <option value="">{t('maintenance.all_priorities')}</option>
+                <option value="LOW">{t('maintenance.priority_low')}</option>
+                <option value="MEDIUM">{t('maintenance.priority_medium')}</option>
+                <option value="HIGH">{t('maintenance.priority_high')}</option>
+                <option value="URGENT">{t('maintenance.priority_urgent')}</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -221,13 +224,13 @@ const MaintenanceList = () => {
                 value={filters.category}
                 onChange={handleFilterChange}
               >
-                <option value="">All Categories</option>
-                <option value="PLUMBING">Plumbing (Water)</option>
-                <option value="ELECTRICAL">Electrical</option>
-                <option value="HVAC">HVAC</option>
-                <option value="APPLIANCE">Appliance</option>
-                <option value="STRUCTURAL">Structural</option>
-                <option value="OTHER">Other</option>
+                <option value="">{t('maintenance.all_categories')}</option>
+                <option value="PLUMBING">{t('maintenance.cat_plumbing')}</option>
+                <option value="ELECTRICAL">{t('maintenance.cat_electrical')}</option>
+                <option value="HVAC">{t('maintenance.cat_hvac')}</option>
+                <option value="APPLIANCE">{t('maintenance.cat_appliance')}</option>
+                <option value="STRUCTURAL">{t('maintenance.cat_structural')}</option>
+                <option value="OTHER">{t('maintenance.cat_other')}</option>
               </Form.Select>
             </Col>
           </Row>
@@ -245,14 +248,14 @@ const MaintenanceList = () => {
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>Request</th>
-                  {(user?.role === 'ADMIN' || user?.role === 'OWNER') && <th>Tenant</th>}
-                  <th>Unit</th>
-                  <th>Category</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
+                  <th>{t('maintenance.request')}</th>
+                  {(user?.role === 'ADMIN' || user?.role === 'OWNER') && <th>{t('tenancies.tenant')}</th>}
+                  <th>{t('units.unit')}</th>
+                  <th>{t('maintenance.category')}</th>
+                  <th>{t('maintenance.priority')}</th>
+                  <th>{t('common.status')}</th>
+                  <th>{t('maintenance.date')}</th>
+                  <th>{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -287,14 +290,14 @@ const MaintenanceList = () => {
                       </td>
                       <td>
                         <i className={`bi ${getCategoryIcon(request.category)} me-2`}></i>
-                        {request.category}
+                        {t(`maintenance.cat_${request.category?.toLowerCase()}`)}
                       </td>
                       <td>
-                        <Badge bg={getPriorityBadge(request.priority)}>{request.priority}</Badge>
+                        <Badge bg={getPriorityBadge(request.priority)}>{t(`maintenance.priority_${request.priority?.toLowerCase()}`)}</Badge>
                       </td>
                       <td>
                         <Badge bg={getStatusBadge(request.status)}>
-                          {request.status?.replace('_', ' ')}
+                          {t(`maintenance.status_${request.status?.toLowerCase()}`)}
                         </Badge>
                       </td>
                       <td>
@@ -306,7 +309,7 @@ const MaintenanceList = () => {
                           size="sm"
                           className="text-info p-1"
                           onClick={() => navigate(`/maintenance/${request.id}`)}
-                          title="View"
+                          title={t('common.view')}
                         >
                           <i className="bi bi-eye"></i>
                         </Button>
@@ -316,7 +319,7 @@ const MaintenanceList = () => {
                             size="sm"
                             className="text-primary p-1"
                             onClick={() => handleUpdateStatus(request)}
-                            title="Update Status"
+                            title={t('maintenance.update_status')}
                           >
                             <i className="bi bi-pencil"></i>
                           </Button>
@@ -327,7 +330,7 @@ const MaintenanceList = () => {
                             size="sm"
                             className="text-danger p-1"
                             onClick={() => handleDelete(request)}
-                            title="Cancel"
+                            title={t('common.cancel')}
                           >
                             <i className="bi bi-x-circle"></i>
                           </Button>
@@ -338,7 +341,7 @@ const MaintenanceList = () => {
                             size="sm"
                             className="text-danger p-1"
                             onClick={() => handleDelete(request)}
-                            title="Delete"
+                            title={t('common.delete')}
                           >
                             <i className="bi bi-trash"></i>
                           </Button>
@@ -349,7 +352,7 @@ const MaintenanceList = () => {
                 ) : (
                   <tr>
                     <td colSpan={(user?.role === 'ADMIN' || user?.role === 'OWNER') ? 8 : 7} className="text-center py-4 text-muted">
-                      No maintenance requests found
+                      {t('maintenance.no_requests')}
                     </td>
                   </tr>
                 )}
@@ -362,19 +365,19 @@ const MaintenanceList = () => {
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
+          <Modal.Title>{t('common.confirm_delete')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to {user?.role === 'TENANT' ? 'cancel' : 'delete'} this request?
+          {user?.role === 'TENANT' ? t('maintenance.confirm_cancel_request') : t('maintenance.confirm_delete_request')}
           <br />
           <strong>{selectedRequest?.title}</strong>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            {user?.role === 'TENANT' ? 'Cancel Request' : 'Delete'}
+            {user?.role === 'TENANT' ? t('maintenance.cancel_request') : t('common.delete')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -382,31 +385,31 @@ const MaintenanceList = () => {
       {/* Update Status Modal */}
       <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Update Request Status</Modal.Title>
+          <Modal.Title>{t('maintenance.update_request_status')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
+              <Form.Label>{t('common.status')}</Form.Label>
               <Form.Select
                 value={updateData.status}
                 onChange={(e) => setUpdateData((prev) => ({ ...prev, status: e.target.value }))}
               >
-                <option value="PENDING">Pending</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="PENDING">{t('maintenance.status_pending')}</option>
+                <option value="IN_PROGRESS">{t('maintenance.status_in_progress')}</option>
+                <option value="COMPLETED">{t('maintenance.status_completed')}</option>
+                <option value="CANCELLED">{t('maintenance.status_cancelled')}</option>
               </Form.Select>
             </Form.Group>
             {updateData.status === 'COMPLETED' && (
               <Form.Group className="mb-3">
-                <Form.Label>Resolution Notes</Form.Label>
+                <Form.Label>{t('maintenance.resolution_notes')}</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
                   value={updateData.resolutionNotes}
                   onChange={(e) => setUpdateData((prev) => ({ ...prev, resolutionNotes: e.target.value }))}
-                  placeholder="Describe how the issue was resolved..."
+                  placeholder={t('maintenance.resolution_placeholder')}
                 />
               </Form.Group>
             )}
@@ -414,10 +417,10 @@ const MaintenanceList = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={confirmUpdate}>
-            Update
+            {t('maintenance.update')}
           </Button>
         </Modal.Footer>
       </Modal>

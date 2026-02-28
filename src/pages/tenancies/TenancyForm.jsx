@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createTenancy,
@@ -19,6 +20,8 @@ import { fetchUsers } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const TenancyForm = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -122,10 +125,10 @@ const TenancyForm = () => {
     try {
       if (isEdit) {
         await dispatch(updateTenancy({ id, data: formData })).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Tenancy updated successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.tenancy_updated') }));
       } else {
         await dispatch(createTenancy(formData)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Tenancy created successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.tenancy_created') }));
       }
       navigate('/tenancies');
     } catch (error) {
@@ -144,11 +147,11 @@ const TenancyForm = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Tenancies
+          {t('tenancies.back_to_tenancies')}
         </Button>
         <div className="page-header mb-0">
-          <h1>{isEdit ? 'Edit Tenancy' : 'Create Tenancy'}</h1>
-          <p className="mb-0">{isEdit ? 'Update tenancy contract' : 'Create a new rental contract'}</p>
+          <h1>{isEdit ? t('tenancies.edit_title') : t('tenancies.create_title')}</h1>
+          <p className="mb-0">{isEdit ? t('tenancies.edit_subtitle') : t('tenancies.create_subtitle')}</p>
         </div>
       </div>
 
@@ -159,12 +162,12 @@ const TenancyForm = () => {
             <Row className="g-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Tenant <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.tenant_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.tenantId}
-                    {...register('tenantId', { required: 'Tenant is required' })}
+                    {...register('tenantId', { required: t('tenancies.select_tenant') })}
                   >
-                    <option value="">Select a tenant</option>
+                    <option value="">{t('tenancies.select_tenant')}</option>
                     {tenants.map((tenant) => (
                       <option key={tenant.id} value={tenant.id}>
                         {tenant.firstName} {tenant.lastName} ({tenant.email})
@@ -178,19 +181,19 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Building <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.building_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.buildingId}
-                    {...register('buildingId', { required: 'Building is required' })}
+                    {...register('buildingId', { required: t('tenancies.select_building') })}
                     onChange={(e) => {
                       setValue('buildingId', e.target.value);
                       setValue('unitId', '');
                     }}
                   >
-                    <option value="">Select a building</option>
+                    <option value="">{t('tenancies.select_building')}</option>
                     {buildings.map((building) => (
                       <option key={building.id} value={building.id}>
-                        {building.name} — {building.address}
+                        {isAr ? building.nameAr : building.nameEn} — {building.address}
                       </option>
                     ))}
                   </Form.Select>
@@ -201,13 +204,13 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Unit <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.unit_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.unitId}
                     disabled={!selectedBuildingId}
-                    {...register('unitId', { required: 'Unit is required' })}
+                    {...register('unitId', { required: t('tenancies.select_unit') })}
                   >
-                    <option value="">{selectedBuildingId ? 'Select a unit' : 'Select a building first'}</option>
+                    <option value="">{selectedBuildingId ? t('tenancies.select_unit') : t('tenancies.select_building_first')}</option>
                     {availableUnits.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.unitNumber} ({unit.type}) — {unit.status}
@@ -221,7 +224,7 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Start Date <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.start_date')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="date"
                     isInvalid={!!errors.startDate}
@@ -234,7 +237,7 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>End Date <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.end_date')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="date"
                     isInvalid={!!errors.endDate}
@@ -247,7 +250,7 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Monthly Rent (EGP) <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.monthly_rent_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
@@ -264,7 +267,7 @@ const TenancyForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Deposit Amount (EGP) <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('tenancies.deposit_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
@@ -282,11 +285,11 @@ const TenancyForm = () => {
               {isEdit && (
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Status</Form.Label>
+                    <Form.Label>{t('tenancies.status_col')}</Form.Label>
                     <Form.Check
                       type="switch"
                       id="isActive"
-                      label={watch('isActive') ? 'Active' : 'Inactive'}
+                      label={watch('isActive') ? t('users.active') : t('users.inactive')}
                       {...register('isActive')}
                     />
                   </Form.Group>
@@ -296,16 +299,16 @@ const TenancyForm = () => {
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <Button variant="secondary" onClick={() => navigate('/tenancies')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    {isEdit ? 'Updating...' : 'Creating...'}
+                    {isEdit ? t('tenancies.updating') : t('tenancies.creating')}
                   </>
                 ) : (
-                  isEdit ? 'Update Tenancy' : 'Create Tenancy'
+                  isEdit ? t('tenancies.update_tenancy') : t('tenancies.create_tenancy')
                 )}
               </Button>
             </div>

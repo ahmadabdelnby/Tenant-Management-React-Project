@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createUnit,
@@ -17,6 +18,8 @@ import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const UnitForm = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -72,10 +75,10 @@ const UnitForm = () => {
     try {
       if (isEdit) {
         await dispatch(updateUnit({ id, data: formData })).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Unit updated successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.unit_updated') }));
       } else {
         await dispatch(createUnit(formData)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'Unit created successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.unit_created') }));
       }
       navigate('/units');
     } catch (error) {
@@ -94,11 +97,11 @@ const UnitForm = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Units
+          {t('units.back_to_units')}
         </Button>
         <div className="page-header mb-0">
-          <h1>{isEdit ? 'Edit Unit' : 'Create Unit'}</h1>
-          <p className="mb-0">{isEdit ? 'Update unit information' : 'Add a new unit to a building'}</p>
+          <h1>{isEdit ? t('units.edit_title') : t('units.create_title')}</h1>
+          <p className="mb-0">{isEdit ? t('units.edit_subtitle') : t('units.create_subtitle')}</p>
         </div>
       </div>
 
@@ -109,15 +112,15 @@ const UnitForm = () => {
             <Row className="g-3">
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Building <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.building_label')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.buildingId}
-                    {...register('buildingId', { required: 'Building is required' })}
+                    {...register('buildingId', { required: t('units.select_building') })}
                   >
-                    <option value="">Select a building</option>
+                    <option value="">{t('units.select_building')}</option>
                     {buildings.map((building) => (
                       <option key={building.id} value={building.id}>
-                        {building.name}
+                        {isAr ? building.nameAr : building.nameEn}
                       </option>
                     ))}
                   </Form.Select>
@@ -128,10 +131,10 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Unit Number <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.unit_number')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="e.g., A101"
+                    placeholder={t('units.unit_number_placeholder')}
                     isInvalid={!!errors.unitNumber}
                     {...register('unitNumber', {
                       required: 'Unit number is required',
@@ -144,7 +147,7 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Floor <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.floor')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
@@ -161,7 +164,7 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Bedrooms <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.bedrooms')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
@@ -178,7 +181,7 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Bathrooms <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.bathrooms')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="1"
@@ -195,12 +198,12 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Area (m²) <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.area')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     step="0.01"
                     min="1"
-                    placeholder="e.g., 120.5"
+                    placeholder={t('units.area_placeholder')}
                     isInvalid={!!errors.area}
                     {...register('area', {
                       required: 'Area is required',
@@ -214,11 +217,11 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Rent Amount (EGP) <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.rent_amount')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
-                    placeholder="e.g., 5000"
+                    placeholder={t('units.rent_placeholder')}
                     isInvalid={!!errors.rentAmount}
                     {...register('rentAmount', {
                       required: 'Rent amount is required',
@@ -232,17 +235,17 @@ const UnitForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('units.type')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.type}
-                    {...register('type', { required: 'Type is required' })}
+                    {...register('type', { required: t('units.select_type') })}
                   >
-                    <option value="">Select type</option>
-                    <option value="APARTMENT">Apartment</option>
-                    <option value="STUDIO">Studio</option>
-                    <option value="VILLA">Villa</option>
-                    <option value="OFFICE">Office</option>
-                    <option value="SHOP">Shop</option>
+                    <option value="">{t('units.select_type')}</option>
+                    <option value="APARTMENT">{t('units.apartment')}</option>
+                    <option value="STUDIO">{t('units.studio')}</option>
+                    <option value="VILLA">{t('units.villa')}</option>
+                    <option value="OFFICE">{t('units.office')}</option>
+                    <option value="SHOP">{t('units.shop')}</option>
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
                     {errors.type?.message}
@@ -252,23 +255,23 @@ const UnitForm = () => {
               {isEdit && (
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Status</Form.Label>
+                    <Form.Label>{t('units.status')}</Form.Label>
                     {currentUnit?.status === 'RENTED' ? (
                       <>
                         <Form.Control
                           type="text"
-                          value="Rented (managed by tenancy)"
+                          value={t('units.rented_managed')}
                           disabled
                           className="bg-light"
                         />
                         <Form.Text className="text-muted">
-                          To change status, end or delete the active tenancy
+                          {t('units.end_tenancy_note')}
                         </Form.Text>
                       </>
                     ) : (
                       <Form.Select {...register('status')}>
-                        <option value="AVAILABLE">Available</option>
-                        <option value="UNAVAILABLE">Unavailable</option>
+                        <option value="AVAILABLE">{t('units.available')}</option>
+                        <option value="UNAVAILABLE">{t('units.unavailable')}</option>
                       </Form.Select>
                     )}
                   </Form.Group>
@@ -278,16 +281,16 @@ const UnitForm = () => {
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <Button variant="secondary" onClick={() => navigate('/units')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    {isEdit ? 'Updating...' : 'Creating...'}
+                    {isEdit ? t('units.updating') : t('units.creating')}
                   </>
                 ) : (
-                  isEdit ? 'Update Unit' : 'Create Unit'
+                  isEdit ? t('units.update_unit') : t('units.create_unit')
                 )}
               </Button>
             </div>

@@ -31,6 +31,17 @@ const paymentsService = {
     return api.post(`/payments/${id}/create-link`);
   },
 
+  // Generate standalone payment link (name + amount)
+  generateLink: async (data) => {
+    return api.post('/payments/generate-link', data);
+  },
+
+  // Get all generated payment links (history)
+  getPaymentLinks: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/payments/payment-links${queryString ? `?${queryString}` : ''}`);
+  },
+
   // Get building payment summary
   getBuildingSummary: async (params) => {
     const queryString = new URLSearchParams(params).toString();

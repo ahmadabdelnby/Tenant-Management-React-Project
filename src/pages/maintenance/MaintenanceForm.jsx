@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Card, Form, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { createMaintenanceRequest } from '../../store/slices/maintenanceSlice';
@@ -12,6 +13,7 @@ import { showNotification } from '../../store/slices/uiSlice';
 import maintenanceService from '../../services/maintenanceService';
 
 const MaintenanceForm = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -55,7 +57,7 @@ const MaintenanceForm = () => {
         }
       } catch (error) {
         console.error('Failed to fetch units:', error);
-        dispatch(showNotification({ type: 'error', message: 'Failed to load your units' }));
+        dispatch(showNotification({ type: 'error', message: t('maintenance.load_units_fail') }));
       } finally {
         setLoadingUnits(false);
       }
@@ -72,7 +74,7 @@ const MaintenanceForm = () => {
         ...data,
         unitId: parseInt(data.unitId, 10),
       })).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Maintenance request submitted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('maintenance.submit_success') }));
       navigate('/maintenance');
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -80,12 +82,12 @@ const MaintenanceForm = () => {
   };
 
   const categories = [
-    { value: 'PLUMBING', label: 'Plumbing (Water Issues)', icon: 'bi-droplet', description: 'Leaks, clogged drains, water heater problems' },
-    { value: 'ELECTRICAL', label: 'Electrical', icon: 'bi-lightning', description: 'Power outages, faulty outlets, lighting issues' },
-    { value: 'HVAC', label: 'HVAC', icon: 'bi-thermometer', description: 'Heating, ventilation, air conditioning' },
-    { value: 'APPLIANCE', label: 'Appliance', icon: 'bi-gear', description: 'Refrigerator, stove, washing machine' },
-    { value: 'STRUCTURAL', label: 'Structural', icon: 'bi-house', description: 'Walls, floors, doors, windows' },
-    { value: 'OTHER', label: 'Other', icon: 'bi-tools', description: 'Any other maintenance issues' },
+    { value: 'PLUMBING', label: t('maintenance.cat_plumbing'), icon: 'bi-droplet', description: t('maintenance.cat_plumbing_desc') },
+    { value: 'ELECTRICAL', label: t('maintenance.cat_electrical'), icon: 'bi-lightning', description: t('maintenance.cat_electrical_desc') },
+    { value: 'HVAC', label: t('maintenance.cat_hvac'), icon: 'bi-thermometer', description: t('maintenance.cat_hvac_desc') },
+    { value: 'APPLIANCE', label: t('maintenance.cat_appliance'), icon: 'bi-gear', description: t('maintenance.cat_appliance_desc') },
+    { value: 'STRUCTURAL', label: t('maintenance.cat_structural'), icon: 'bi-house', description: t('maintenance.cat_structural_desc') },
+    { value: 'OTHER', label: t('maintenance.cat_other'), icon: 'bi-tools', description: t('maintenance.cat_other_desc') },
   ];
 
   return (
@@ -99,19 +101,18 @@ const MaintenanceForm = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Requests
+          {t('maintenance.back_to_requests')}
         </Button>
         <div className="page-header mb-0">
-          <h1>New Maintenance Request</h1>
-          <p className="mb-0">Submit a maintenance request for your unit</p>
+          <h1>{t('maintenance.new_request')}</h1>
+          <p className="mb-0">{t('maintenance.new_request_subtitle')}</p>
         </div>
       </div>
 
       {/* Info Alert */}
       <Alert variant="info" className="mb-4">
         <i className="bi bi-info-circle me-2"></i>
-        Your request will be sent to the property manager and building owner for review.
-        They will contact you or schedule a maintenance visit.
+        {t('maintenance.info_alert')}
       </Alert>
 
       {/* Form Card */}
@@ -120,12 +121,12 @@ const MaintenanceForm = () => {
           {loadingUnits ? (
             <div className="text-center py-5">
               <Spinner animation="border" style={{ color: 'var(--navy-dark)' }} />
-              <p className="mt-2 text-muted">Loading your units...</p>
+              <p className="mt-2 text-muted">{t('maintenance.loading_units')}</p>
             </div>
           ) : myUnits.length === 0 ? (
             <Alert variant="warning" className="mb-0">
               <i className="bi bi-exclamation-triangle me-2"></i>
-              You don't have any active rentals. Please contact the property manager if you believe this is an error.
+              {t('maintenance.no_active_rentals')}
             </Alert>
           ) : (
           <Form onSubmit={handleSubmit(onSubmit)}>
@@ -133,16 +134,16 @@ const MaintenanceForm = () => {
               {/* Unit Selection */}
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Select Unit <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('maintenance.select_unit')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.unitId}
-                    {...register('unitId', { required: 'Please select a unit' })}
+                    {...register('unitId', { required: t('maintenance.select_unit_required') })}
                   >
-                    {myUnits.length > 1 && <option value="">-- Select the unit with the issue --</option>}
+                    {myUnits.length > 1 && <option value="">-- {t('maintenance.select_unit_placeholder')} --</option>}
                     {myUnits.map((unit) => (
                       <option key={unit.unitId} value={unit.unitId}>
-                        {unit.buildingName} - Unit {unit.unitNumber}
-                        {unit.floor && ` (Floor ${unit.floor})`}
+                        {unit.buildingName} - {t('units.unit')} {unit.unitNumber}
+                        {unit.floor && ` (${t('units.floor')} ${unit.floor})`}
                       </option>
                     ))}
                   </Form.Select>
@@ -151,7 +152,7 @@ const MaintenanceForm = () => {
                   </Form.Control.Feedback>
                   {myUnits.length > 1 && (
                     <Form.Text className="text-muted">
-                      You have {myUnits.length} active rentals. Please select which unit has the issue.
+                      {t('maintenance.multiple_units_hint', { count: myUnits.length })}
                     </Form.Text>
                   )}
                 </Form.Group>
@@ -160,14 +161,14 @@ const MaintenanceForm = () => {
               {/* Title */}
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Request Title <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('maintenance.request_title')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Brief description of the issue"
+                    placeholder={t('maintenance.request_title_placeholder')}
                     isInvalid={!!errors.title}
                     {...register('title', { 
-                      required: 'Title is required',
-                      minLength: { value: 5, message: 'Title must be at least 5 characters' },
+                      required: t('maintenance.title_required'),
+                      minLength: { value: 5, message: t('maintenance.title_min_length') },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -179,7 +180,7 @@ const MaintenanceForm = () => {
               {/* Category */}
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Category <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('maintenance.category')} <span className="text-danger">*</span></Form.Label>
                   <Row className="g-2">
                     {categories.map((cat) => (
                       <Col md={4} key={cat.value}>
@@ -191,7 +192,7 @@ const MaintenanceForm = () => {
                           <Form.Check.Input
                             type="radio"
                             value={cat.value}
-                            {...register('category', { required: 'Category is required' })}
+                            {...register('category', { required: t('maintenance.category_required') })}
                           />
                           <Form.Check.Label className="w-100">
                             <Card className="h-100 text-center p-2" style={{ cursor: 'pointer' }}>
@@ -212,15 +213,15 @@ const MaintenanceForm = () => {
               {/* Priority */}
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Priority <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('maintenance.priority')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.priority}
-                    {...register('priority', { required: 'Priority is required' })}
+                    {...register('priority', { required: t('maintenance.priority_required') })}
                   >
-                    <option value="LOW">Low - Can wait a few days</option>
-                    <option value="MEDIUM">Medium - Should be fixed soon</option>
-                    <option value="HIGH">High - Affecting daily life</option>
-                    <option value="URGENT">Urgent - Emergency situation</option>
+                    <option value="LOW">{t('maintenance.priority_low')} - {t('maintenance.priority_low_desc')}</option>
+                    <option value="MEDIUM">{t('maintenance.priority_medium')} - {t('maintenance.priority_medium_desc')}</option>
+                    <option value="HIGH">{t('maintenance.priority_high')} - {t('maintenance.priority_high_desc')}</option>
+                    <option value="URGENT">{t('maintenance.priority_urgent')} - {t('maintenance.priority_urgent_desc')}</option>
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
                     {errors.priority?.message}
@@ -231,15 +232,15 @@ const MaintenanceForm = () => {
               {/* Description */}
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Description <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('maintenance.description')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={5}
-                    placeholder="Please describe the issue in detail. Include location within the unit, when it started, and any other relevant information..."
+                    placeholder={t('maintenance.description_placeholder')}
                     isInvalid={!!errors.description}
                     {...register('description', { 
-                      required: 'Description is required',
-                      minLength: { value: 20, message: 'Please provide more details (at least 20 characters)' },
+                      required: t('maintenance.description_required'),
+                      minLength: { value: 20, message: t('maintenance.description_min_length') },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -251,18 +252,18 @@ const MaintenanceForm = () => {
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <Button variant="secondary" onClick={() => navigate('/maintenance')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    Submitting...
+                    {t('maintenance.submitting')}
                   </>
                 ) : (
                   <>
                     <i className="bi bi-send me-2"></i>
-                    Submit Request
+                    {t('maintenance.submit_request')}
                   </>
                 )}
               </Button>

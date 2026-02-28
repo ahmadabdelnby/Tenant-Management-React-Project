@@ -6,10 +6,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { login, clearError } from '../store/slices/authSlice';
+import LanguageSwitcher from '../components/layout/LanguageSwitcher';
 
 const Login = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, isLoading, error } = useSelector((state) => state.auth);
@@ -39,14 +42,19 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      {/* Language Switcher on Login Page */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <LanguageSwitcher />
+      </div>
+
       <div className="login-card">
         {/* Logo & Title */}
         <div className="text-center mb-4">
           <div className="login-logo">
             <i className="bi bi-building"></i>
           </div>
-          <h2 className="fw-bold" style={{ color: 'var(--navy-dark)' }}>PropertyMS</h2>
-          <p className="text-muted">Property Management System</p>
+          <h2 className="fw-bold" style={{ color: 'var(--navy-dark)' }}>{t('login.title')}</h2>
+          <p className="text-muted">{t('login.subtitle')}</p>
         </div>
 
         {/* Error Message */}
@@ -60,16 +68,16 @@ const Login = () => {
         {/* Login Form */}
         <Form onSubmit={handleSubmit(onSubmit)}>
           <Form.Group className="mb-3">
-            <Form.Label>Email Address</Form.Label>
+            <Form.Label>{t('login.email_label')}</Form.Label>
             <Form.Control
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('login.email_placeholder')}
               isInvalid={!!errors.email}
               {...register('email', {
-                required: 'Email is required',
+                required: t('login.email_required'),
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
+                  message: t('login.email_invalid'),
                 },
               })}
             />
@@ -79,23 +87,23 @@ const Login = () => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
+            <Form.Label>{t('login.password_label')}</Form.Label>
             <div className="position-relative">
               <Form.Control
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder={t('login.password_placeholder')}
                 isInvalid={!!errors.password}
                 {...register('password', {
-                  required: 'Password is required',
+                  required: t('login.password_required'),
                   minLength: {
                     value: 6,
-                    message: 'Password must be at least 6 characters',
+                    message: t('login.password_min'),
                   },
                 })}
               />
               <Button
                 variant="link"
-                className="position-absolute top-50 end-0 translate-middle-y text-muted"
+                className={`position-absolute top-50 translate-middle-y text-muted ${i18n.language === 'ar' ? 'start-0' : 'end-0'}`}
                 style={{ zIndex: 10 }}
                 onClick={() => setShowPassword(!showPassword)}
                 type="button"
@@ -108,17 +116,6 @@ const Login = () => {
             )}
           </Form.Group>
 
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <Form.Check
-              type="checkbox"
-              label="Remember me"
-              id="remember"
-            />
-            <a href="#" className="text-decoration-none" style={{ color: 'var(--bs-primary)' }}>
-              Forgot password?
-            </a>
-          </div>
-
           <Button
             variant="primary"
             type="submit"
@@ -128,10 +125,10 @@ const Login = () => {
             {isLoading ? (
               <>
                 <Spinner animation="border" size="sm" className="me-2" />
-                Signing in...
+                {t('login.signing_in')}
               </>
             ) : (
-              'Sign In'
+              t('login.sign_in')
             )}
           </Button>
         </Form>
@@ -139,7 +136,7 @@ const Login = () => {
         {/* Footer */}
         <div className="text-center mt-4">
           <small className="text-muted">
-            © {new Date().getFullYear()} PropertyMS. All rights reserved.
+            © {new Date().getFullYear()} PropertyMS.
           </small>
         </div>
       </div>

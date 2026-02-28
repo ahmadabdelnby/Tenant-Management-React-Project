@@ -5,11 +5,13 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Row, Col, Card, Form, Button, Nav, Badge, Spinner } from 'react-bootstrap';
 import { updateProfile, changePassword } from '../store/slices/authSlice';
 import { showNotification } from '../store/slices/uiSlice';
 
 const Profile = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { user, isLoading } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState('profile');
@@ -41,7 +43,7 @@ const Profile = () => {
   const onProfileSubmit = async (data) => {
     try {
       await dispatch(updateProfile(data)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Profile updated successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.profile_updated') }));
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
     }
@@ -53,7 +55,7 @@ const Profile = () => {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       })).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Password changed successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.password_changed') }));
       resetPassword();
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -73,8 +75,8 @@ const Profile = () => {
     <div>
       {/* Page Header */}
       <div className="page-header">
-        <h1>My Profile</h1>
-        <p>Manage your account settings</p>
+        <h1>{t('profile.title')}</h1>
+        <p>{t('profile.subtitle')}</p>
       </div>
 
       {/* Profile Card */}
@@ -106,7 +108,7 @@ const Profile = () => {
             onClick={() => setActiveTab('profile')}
             style={{ cursor: 'pointer' }}
           >
-            Profile Information
+            {t('profile.profile_tab')}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -115,7 +117,7 @@ const Profile = () => {
             onClick={() => setActiveTab('password')}
             style={{ cursor: 'pointer' }}
           >
-            Change Password
+            {t('profile.security_tab')}
           </Nav.Link>
         </Nav.Item>
       </Nav>
@@ -124,20 +126,20 @@ const Profile = () => {
       {activeTab === 'profile' && (
         <Card>
           <Card.Header>
-            <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Profile Information</h5>
+            <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('profile.profile_tab')}</h5>
           </Card.Header>
           <Card.Body>
             <Form onSubmit={handleProfileSubmit(onProfileSubmit)}>
               <Row className="g-3">
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>First Name</Form.Label>
+                    <Form.Label>{t('profile.first_name')}</Form.Label>
                     <Form.Control
                       type="text"
                       isInvalid={!!profileErrors.firstName}
                       {...registerProfile('firstName', {
-                        required: 'First name is required',
-                        minLength: { value: 2, message: 'Min 2 characters' },
+                        required: t('profile.first_name_required'),
+                        minLength: { value: 2, message: t('profile.min_2_chars') },
                       })}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -147,13 +149,13 @@ const Profile = () => {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Last Name</Form.Label>
+                    <Form.Label>{t('profile.last_name')}</Form.Label>
                     <Form.Control
                       type="text"
                       isInvalid={!!profileErrors.lastName}
                       {...registerProfile('lastName', {
-                        required: 'Last name is required',
-                        minLength: { value: 2, message: 'Min 2 characters' },
+                        required: t('profile.last_name_required'),
+                        minLength: { value: 2, message: t('profile.min_2_chars') },
                       })}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -163,14 +165,14 @@ const Profile = () => {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Phone</Form.Label>
+                    <Form.Label>{t('profile.phone')}</Form.Label>
                     <Form.Control
                       type="text"
                       isInvalid={!!profileErrors.phone}
                       {...registerProfile('phone', {
                         pattern: {
                           value: /^[0-9+\-\s()]+$/,
-                          message: 'Invalid phone number',
+                          message: t('profile.invalid_phone'),
                         },
                       })}
                     />
@@ -181,7 +183,7 @@ const Profile = () => {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Email</Form.Label>
+                    <Form.Label>{t('profile.email')}</Form.Label>
                     <Form.Control
                       type="email"
                       value={user?.email || ''}
@@ -212,19 +214,19 @@ const Profile = () => {
       {activeTab === 'password' && (
         <Card>
           <Card.Header>
-            <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>Change Password</h5>
+            <h5 className="mb-0" style={{ color: 'var(--navy-dark)' }}>{t('profile.security_tab')}</h5>
           </Card.Header>
           <Card.Body>
             <Form onSubmit={handlePasswordSubmit(onPasswordSubmit)}>
               <Row className="g-3">
                 <Col md={12}>
                   <Form.Group>
-                    <Form.Label>Current Password</Form.Label>
+                    <Form.Label>{t('profile.current_password')}</Form.Label>
                     <Form.Control
                       type="password"
                       isInvalid={!!passwordErrors.currentPassword}
                       {...registerPassword('currentPassword', {
-                        required: 'Current password is required',
+                        required: t('profile.current_password_required'),
                       })}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -234,16 +236,16 @@ const Profile = () => {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>New Password</Form.Label>
+                    <Form.Label>{t('profile.new_password')}</Form.Label>
                     <Form.Control
                       type="password"
                       isInvalid={!!passwordErrors.newPassword}
                       {...registerPassword('newPassword', {
-                        required: 'New password is required',
-                        minLength: { value: 8, message: 'Min 8 characters' },
+                        required: t('profile.new_password_required'),
+                        minLength: { value: 8, message: t('profile.min_8_chars') },
                         pattern: {
                           value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                          message: 'Must contain uppercase, lowercase and number',
+                          message: t('profile.password_pattern'),
                         },
                       })}
                     />
@@ -254,14 +256,14 @@ const Profile = () => {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Confirm New Password</Form.Label>
+                    <Form.Label>{t('profile.confirm_password')}</Form.Label>
                     <Form.Control
                       type="password"
                       isInvalid={!!passwordErrors.confirmPassword}
                       {...registerPassword('confirmPassword', {
-                        required: 'Confirm password is required',
+                        required: t('profile.confirm_password_required'),
                         validate: (value) =>
-                          value === newPassword || 'Passwords do not match',
+                          value === newPassword || t('profile.password_mismatch'),
                       })}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -275,10 +277,10 @@ const Profile = () => {
                   {isLoading ? (
                     <>
                       <Spinner animation="border" size="sm" className="me-2" />
-                      Changing...
+                      {t('profile.changing')}
                     </>
                   ) : (
-                    'Change Password'
+                    t('profile.change_password')
                   )}
                 </Button>
               </div>

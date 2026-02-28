@@ -13,6 +13,7 @@ const maintenanceService = {
     if (params.status) queryParams.append('status', params.status);
     if (params.priority) queryParams.append('priority', params.priority);
     if (params.category) queryParams.append('category', params.category);
+    if (params.buildingId) queryParams.append('buildingId', params.buildingId);
     
     const query = queryParams.toString();
     return api.get(`/maintenance${query ? `?${query}` : ''}`);

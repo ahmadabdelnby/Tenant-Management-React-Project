@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createUser,
@@ -16,6 +17,7 @@ import {
 import { showNotification } from '../../store/slices/uiSlice';
 
 const UserForm = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -56,10 +58,10 @@ const UserForm = () => {
       if (isEdit) {
         const { password, ...updateData } = data;
         await dispatch(updateUser({ id, data: updateData })).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'User updated successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.user_updated') }));
       } else {
         await dispatch(createUser(data)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'User created successfully' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.user_created') }));
       }
       navigate('/users');
     } catch (error) {
@@ -78,11 +80,11 @@ const UserForm = () => {
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          Back to Users
+          {t('users.back_to_users')}
         </Button>
         <div className="page-header mb-0">
-          <h1>{isEdit ? 'Edit User' : 'Create User'}</h1>
-          <p className="mb-0">{isEdit ? 'Update user information' : 'Add a new user to the system'}</p>
+          <h1>{isEdit ? t('users.edit_title') : t('users.create_title')}</h1>
+          <p className="mb-0">{isEdit ? t('users.edit_subtitle') : t('users.create_subtitle')}</p>
         </div>
       </div>
 
@@ -93,13 +95,13 @@ const UserForm = () => {
             <Row className="g-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>First Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('users.first_name')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     isInvalid={!!errors.firstName}
                     {...register('firstName', {
-                      required: 'First name is required',
-                      minLength: { value: 2, message: 'Min 2 characters' },
+                      required: t('users.first_name_required'),
+                      minLength: { value: 2, message: t('users.min_2_chars') },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -109,13 +111,13 @@ const UserForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Last Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('users.last_name')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     isInvalid={!!errors.lastName}
                     {...register('lastName', {
-                      required: 'Last name is required',
-                      minLength: { value: 2, message: 'Min 2 characters' },
+                      required: t('users.last_name_required'),
+                      minLength: { value: 2, message: t('users.min_2_chars') },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -125,16 +127,16 @@ const UserForm = () => {
               </Col>
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('users.email')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="email"
                     isInvalid={!!errors.email}
                     disabled={isEdit}
                     {...register('email', {
-                      required: 'Email is required',
+                      required: t('users.email_required'),
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address',
+                        message: t('users.email_invalid'),
                       },
                     })}
                   />
@@ -146,16 +148,16 @@ const UserForm = () => {
               {!isEdit && (
                 <Col md={12}>
                   <Form.Group>
-                    <Form.Label>Password <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>{t('users.password')} <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="password"
                       isInvalid={!!errors.password}
                       {...register('password', {
-                        required: 'Password is required',
-                        minLength: { value: 8, message: 'Min 8 characters' },
+                        required: t('users.password_required'),
+                        minLength: { value: 8, message: t('users.min_8_chars') },
                         pattern: {
                           value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                          message: 'Must contain uppercase, lowercase and number',
+                          message: t('users.password_pattern'),
                         },
                       })}
                     />
@@ -167,7 +169,7 @@ const UserForm = () => {
               )}
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Phone</Form.Label>
+                  <Form.Label>{t('users.phone')}</Form.Label>
                   <Form.Control
                     type="text"
                     isInvalid={!!errors.phone}
@@ -180,15 +182,15 @@ const UserForm = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Role <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('users.role')} <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     isInvalid={!!errors.role}
-                    {...register('role', { required: 'Role is required' })}
+                    {...register('role', { required: t('users.role_required') })}
                   >
-                    <option value="">Select role</option>
-                    <option value="ADMIN">Admin</option>
-                    <option value="OWNER">Owner</option>
-                    <option value="TENANT">Tenant</option>
+                    <option value="">{t('users.select_role')}</option>
+                    <option value="ADMIN">{t('users.admin')}</option>
+                    <option value="OWNER">{t('users.owner')}</option>
+                    <option value="TENANT">{t('users.tenant')}</option>
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
                     {errors.role?.message}
@@ -199,16 +201,16 @@ const UserForm = () => {
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <Button variant="secondary" onClick={() => navigate('/users')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    {isEdit ? 'Updating...' : 'Creating...'}
+                    {isEdit ? t('users.updating') : t('users.creating')}
                   </>
                 ) : (
-                  isEdit ? 'Update User' : 'Create User'
+                  isEdit ? t('users.update_user') : t('users.create_user')
                 )}
               </Button>
             </div>

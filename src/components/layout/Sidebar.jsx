@@ -4,10 +4,12 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Nav } from 'react-bootstrap';
 import { logout } from '../../store/slices/authSlice';
 
 const Sidebar = ({ isOpen, onToggle }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -21,49 +23,43 @@ const Sidebar = ({ isOpen, onToggle }) => {
     {
       path: '/dashboard',
       icon: 'bi-speedometer2',
-      label: 'Dashboard',
+      labelKey: 'sidebar.dashboard',
       roles: ['ADMIN', 'OWNER', 'TENANT'],
     },
     {
       path: '/users',
       icon: 'bi-people',
-      label: 'Users',
+      labelKey: 'sidebar.users',
       roles: ['ADMIN'],
     },
     {
       path: '/buildings',
       icon: 'bi-building',
-      label: 'Buildings',
+      labelKey: 'sidebar.buildings',
       roles: ['ADMIN', 'OWNER'],
     },
     {
       path: '/units',
       icon: 'bi-door-open',
-      label: 'Units',
+      labelKey: 'sidebar.units',
       roles: ['ADMIN', 'OWNER'],
     },
     {
       path: '/tenancies',
       icon: 'bi-file-earmark-text',
-      label: 'Tenancies',
+      labelKey: 'sidebar.tenancies',
       roles: ['ADMIN', 'OWNER', 'TENANT'],
     },
     {
       path: '/maintenance',
       icon: 'bi-tools',
-      label: 'Maintenance',
+      labelKey: 'sidebar.maintenance',
       roles: ['ADMIN', 'OWNER', 'TENANT'],
     },
     {
       path: '/payments',
       icon: 'bi-cash-stack',
-      label: 'Payments',
-      roles: ['ADMIN', 'OWNER', 'TENANT'],
-    },
-    {
-      path: '/payments/building-summary',
-      icon: 'bi-bar-chart-line',
-      label: 'Payment Summary',
+      labelKey: 'sidebar.payments',
       roles: ['ADMIN', 'OWNER'],
     },
   ];
@@ -88,8 +84,8 @@ const Sidebar = ({ isOpen, onToggle }) => {
             <i className="bi bi-building" style={{ color: 'var(--navy-dark)', fontSize: '20px' }}></i>
           </div>
           <div>
-            <h5 className="mb-0 text-white fw-bold">PropertyMS</h5>
-            <small className="text-white-50">Management</small>
+            <h5 className="mb-0 text-white fw-bold">{t('app_name')}</h5>
+            <small className="text-white-50">{t('app_subtitle')}</small>
           </div>
         </div>
       </div>
@@ -105,7 +101,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
             }
           >
             <i className={`bi ${item.icon}`}></i>
-            {item.label}
+            {t(item.labelKey)}
           </NavLink>
         ))}
       </Nav>
@@ -118,7 +114,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           style={{ background: 'none', border: 'none' }}
         >
           <i className="bi bi-box-arrow-left"></i>
-          Logout
+          {t('sidebar.logout')}
         </button>
       </div>
     </div>

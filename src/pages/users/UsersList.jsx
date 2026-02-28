@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import {
   fetchUsers,
@@ -15,6 +16,7 @@ import {
 import { showNotification } from '../../store/slices/uiSlice';
 
 const UsersList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { users, isLoading } = useSelector((state) => state.users);
@@ -39,7 +41,7 @@ const UsersList = () => {
   const confirmDelete = async () => {
     try {
       await dispatch(deleteUser(selectedUser.id)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'User deleted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.user_deleted') }));
       setShowDeleteModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -50,10 +52,10 @@ const UsersList = () => {
     try {
       if (user.isActive) {
         await dispatch(deactivateUser(user.id)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'User deactivated' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.user_deactivated') }));
       } else {
         await dispatch(activateUser(user.id)).unwrap();
-        dispatch(showNotification({ type: 'success', message: 'User activated' }));
+        dispatch(showNotification({ type: 'success', message: t('notifications.user_activated') }));
       }
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -74,12 +76,12 @@ const UsersList = () => {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1>Users</h1>
-          <p className="mb-0">Manage system users</p>
+          <h1>{t('users.title')}</h1>
+          <p className="mb-0">{t('users.subtitle')}</p>
         </div>
         <Button variant="primary" onClick={() => navigate('/users/new')}>
           <i className="bi bi-plus-lg me-2"></i>
-          Add User
+          {t('users.add_user')}
         </Button>
       </div>
 
@@ -95,7 +97,7 @@ const UsersList = () => {
                 <Form.Control
                   type="text"
                   name="search"
-                  placeholder="Search users..."
+                  placeholder={t('users.search_placeholder')}
                   value={filters.search}
                   onChange={handleFilterChange}
                 />
@@ -107,10 +109,10 @@ const UsersList = () => {
                 value={filters.role}
                 onChange={handleFilterChange}
               >
-                <option value="">All Roles</option>
-                <option value="ADMIN">Admin</option>
-                <option value="OWNER">Owner</option>
-                <option value="TENANT">Tenant</option>
+                <option value="">{t('users.all_roles')}</option>
+                <option value="ADMIN">{t('users.admin')}</option>
+                <option value="OWNER">{t('users.owner')}</option>
+                <option value="TENANT">{t('users.tenant')}</option>
               </Form.Select>
             </Col>
           </Row>
@@ -128,11 +130,11 @@ const UsersList = () => {
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>{t('users.user_col')}</th>
+                  <th>{t('users.email_col')}</th>
+                  <th>{t('users.role_col')}</th>
+                  <th>{t('users.status_col')}</th>
+                  <th>{t('users.actions_col')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,17 +148,17 @@ const UsersList = () => {
                           </div>
                           <div>
                             <div className="fw-semibold">{user.firstName} {user.lastName}</div>
-                            <small className="text-muted">{user.phone || 'No phone'}</small>
+                            <small className="text-muted">{user.phone || t('users.no_phone')}</small>
                           </div>
                         </div>
                       </td>
                       <td>{user.email}</td>
                       <td>
-                        <Badge bg={getRoleBadge(user.role)}>{user.role}</Badge>
+                        <Badge bg={getRoleBadge(user.role)}>{t(`users.${user.role.toLowerCase()}`)}</Badge>
                       </td>
                       <td>
                         <Badge bg={user.isActive ? 'success' : 'danger'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive ? t('users.active') : t('users.inactive')}
                         </Badge>
                       </td>
                       <td>
@@ -193,7 +195,7 @@ const UsersList = () => {
                 ) : (
                   <tr>
                     <td colSpan="5" className="text-center py-4 text-muted">
-                      No users found
+                      {t('users.no_users')}
                     </td>
                   </tr>
                 )}
@@ -206,18 +208,17 @@ const UsersList = () => {
       {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Delete User</Modal.Title>
+          <Modal.Title>{t('users.delete_title')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete <strong>{selectedUser?.firstName} {selectedUser?.lastName}</strong>?
-          This action cannot be undone.
-        </Modal.Body>
+        <Modal.Body
+          dangerouslySetInnerHTML={{ __html: t('users.delete_confirm', { name: `${selectedUser?.firstName} ${selectedUser?.lastName}` }) }}
+        />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Delete
+            {t('common.delete')}
           </Button>
         </Modal.Footer>
       </Modal>

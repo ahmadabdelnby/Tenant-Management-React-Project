@@ -5,10 +5,13 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 import { logout } from '../../store/slices/authSlice';
 import NotificationBell from './NotificationBell';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = ({ onToggleSidebar }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -30,6 +33,9 @@ const Header = ({ onToggleSidebar }) => {
 
       {/* Right Side */}
       <div className="d-flex align-items-center gap-3">
+        {/* Language Switcher */}
+        <LanguageSwitcher />
+
         {/* Notification Bell */}
         <NotificationBell />
 
@@ -56,12 +62,12 @@ const Header = ({ onToggleSidebar }) => {
           <Dropdown.Menu>
             <Dropdown.Item onClick={() => navigate('/profile')}>
               <i className="bi bi-person me-2"></i>
-              My Profile
+              {t('header.my_profile')}
             </Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item onClick={handleLogout} className="text-danger">
               <i className="bi bi-box-arrow-left me-2"></i>
-              Logout
+              {t('header.logout')}
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>

@@ -11,13 +11,22 @@ import { fetchBuildingSummary, createPaymentLink } from '../../store/slices/paym
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import { paymentsService } from '../../services';
+import { useTranslation } from 'react-i18next';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+const MONTH_NAMES_AR = [
+  '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+];
+
 const BuildingPaymentSummary = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
+  const monthNames = isAr ? MONTH_NAMES_AR : MONTH_NAMES;
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { buildingSummary, isLoading } = useSelector((state) => state.payments);
@@ -54,7 +63,7 @@ const BuildingPaymentSummary = () => {
       await dispatch(createPaymentLink(paymentId)).unwrap();
       dispatch(showNotification({
         type: 'success',
-        message: 'Payment link created & notification sent',
+        message: t('notifications.payment_link_created'),
       }));
       loadSummary();
     } catch (error) {
@@ -80,9 +89,9 @@ const BuildingPaymentSummary = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      dispatch(showNotification({ type: 'success', message: 'Report downloaded' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.excel_downloaded') }));
     } catch (error) {
-      dispatch(showNotification({ type: 'error', message: 'Failed to export' }));
+      dispatch(showNotification({ type: 'error', message: t('notifications.export_failed') }));
     } finally {
       setExporting(false);
     }
@@ -97,11 +106,11 @@ const BuildingPaymentSummary = () => {
       NO_RECORD: 'secondary',
     };
     const labels = {
-      PAID: 'Paid',
-      PENDING: 'Pending',
-      OVERDUE: 'Overdue',
-      PARTIALLY_PAID: 'Partial',
-      NO_RECORD: 'No Record',
+      PAID: t('payments_page.status_paid'),
+      PENDING: t('payments_page.status_pending'),
+      OVERDUE: t('payments_page.status_overdue'),
+      PARTIALLY_PAID: t('payments_page.status_partial'),
+      NO_RECORD: t('payments_page.status_no_record'),
     };
     return <Badge bg={variants[status] || 'secondary'}>{labels[status] || status}</Badge>;
   };
@@ -116,8 +125,8 @@ const BuildingPaymentSummary = () => {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1><i className="bi bi-building me-2"></i>Building Payment Summary</h1>
-          <p className="mb-0">View payment status per building</p>
+          <h1><i className="bi bi-building me-2"></i>{t('building_summary.title')}</h1>
+          <p className="mb-0">{t('building_summary.subtitle')}</p>
         </div>
         {selectedBuilding && (
           <Button
@@ -126,7 +135,7 @@ const BuildingPaymentSummary = () => {
             disabled={exporting}
           >
             <i className="bi bi-file-earmark-excel me-2"></i>
-            {exporting ? 'Exporting...' : 'Export Excel'}
+            {exporting ? t('payments_page.exporting') : t('payments_page.export_excel')}
           </Button>
         )}
       </div>
@@ -136,27 +145,27 @@ const BuildingPaymentSummary = () => {
         <Card.Body>
           <Row className="g-3">
             <Col md={4}>
-              <Form.Label className="small text-muted">Building</Form.Label>
+              <Form.Label className="small text-muted">{t('payments_page.building')}</Form.Label>
               <Form.Select
                 value={selectedBuilding}
                 onChange={(e) => setSelectedBuilding(e.target.value)}
               >
-                <option value="">Select Building</option>
+                <option value="">{t('building_summary.select_building')}</option>
                 {buildings?.map(b => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
+                  <option key={b.id} value={b.id}>{isAr ? (b.nameAr || b.nameEn || b.name) : (b.nameEn || b.name)}</option>
                 ))}
               </Form.Select>
             </Col>
             <Col md={3}>
-              <Form.Label className="small text-muted">Month</Form.Label>
+              <Form.Label className="small text-muted">{t('payments_page.month')}</Form.Label>
               <Form.Select value={month} onChange={(e) => setMonth(parseInt(e.target.value))}>
-                {MONTH_NAMES.slice(1).map((name, i) => (
+                {monthNames.slice(1).map((name, i) => (
                   <option key={i + 1} value={i + 1}>{name}</option>
                 ))}
               </Form.Select>
             </Col>
             <Col md={2}>
-              <Form.Label className="small text-muted">Year</Form.Label>
+              <Form.Label className="small text-muted">{t('payments_page.year')}</Form.Label>
               <Form.Select value={year} onChange={(e) => setYear(parseInt(e.target.value))}>
                 {[2024, 2025, 2026].map(y => (
                   <option key={y} value={y}>{y}</option>
@@ -176,7 +185,7 @@ const BuildingPaymentSummary = () => {
                 <h3 className="mb-1" style={{ color: 'var(--navy-dark)' }}>
                   {summary.totalTenants}
                 </h3>
-                <small className="text-muted">Total Tenants</small>
+                <small className="text-muted">{t('building_summary.total_tenants')}</small>
               </Card.Body>
             </Card>
           </Col>
@@ -184,7 +193,7 @@ const BuildingPaymentSummary = () => {
             <Card className="border-0 shadow-sm">
               <Card.Body className="text-center">
                 <h3 className="mb-1 text-success">{summary.paidCount}</h3>
-                <small className="text-muted">Paid</small>
+                <small className="text-muted">{t('payments_page.status_paid')}</small>
               </Card.Body>
             </Card>
           </Col>
@@ -192,7 +201,7 @@ const BuildingPaymentSummary = () => {
             <Card className="border-0 shadow-sm">
               <Card.Body className="text-center">
                 <h3 className="mb-1 text-warning">{summary.totalPending}</h3>
-                <small className="text-muted">Pending</small>
+                <small className="text-muted">{t('payments_page.status_pending')}</small>
               </Card.Body>
             </Card>
           </Col>
@@ -200,7 +209,7 @@ const BuildingPaymentSummary = () => {
             <Card className="border-0 shadow-sm">
               <Card.Body className="text-center">
                 <h3 className="mb-1 text-danger">{summary.totalOverdue}</h3>
-                <small className="text-muted">Overdue</small>
+                <small className="text-muted">{t('payments_page.status_overdue')}</small>
               </Card.Body>
             </Card>
           </Col>
@@ -212,7 +221,7 @@ const BuildingPaymentSummary = () => {
         <Card className="mb-4">
           <Card.Body>
             <div className="d-flex justify-content-between mb-2">
-              <span className="fw-semibold">Collection Progress</span>
+              <span className="fw-semibold">{t('building_summary.collection_progress')}</span>
               <span className="fw-semibold">{paidPercentage}%</span>
             </div>
             <ProgressBar>
@@ -220,10 +229,10 @@ const BuildingPaymentSummary = () => {
             </ProgressBar>
             <div className="d-flex justify-content-between mt-2">
               <small className="text-muted">
-                Collected: {summary.totalPaid?.toFixed(3)} KWD
+                {t('building_summary.collected')}: {summary.totalPaid?.toFixed(3)} {t('common.kwd')}
               </small>
               <small className="text-muted">
-                Expected: {summary.totalExpected?.toFixed(3)} KWD
+                {t('building_summary.expected')}: {summary.totalExpected?.toFixed(3)} {t('common.kwd')}
               </small>
             </div>
           </Card.Body>
@@ -235,7 +244,7 @@ const BuildingPaymentSummary = () => {
         <Card>
           <Card.Body className="text-center py-5 text-muted">
             <i className="bi bi-building fs-1 d-block mb-2 opacity-50"></i>
-            Select a building to view payment details
+            {t('building_summary.select_building_hint')}
           </Card.Body>
         </Card>
       ) : isLoading ? (
@@ -247,70 +256,70 @@ const BuildingPaymentSummary = () => {
       ) : (
         <Card>
           <Card.Header className="fw-semibold" style={{ backgroundColor: 'var(--beige-light)' }}>
-            {MONTH_NAMES[month]} {year} — Payment Details
+            {monthNames[month]} {year} — {t('building_summary.payment_details')}
           </Card.Header>
           <Card.Body className="p-0">
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>Unit</th>
-                  <th>Tenant</th>
-                  <th>Contact</th>
-                  <th>Monthly Rent</th>
-                  <th>Status</th>
-                  <th>Method</th>
-                  <th>Actions</th>
+                  <th>{t('building_summary.unit')}</th>
+                  <th>{t('payments_page.tenant')}</th>
+                  <th>{t('building_summary.contact')}</th>
+                  <th>{t('building_summary.monthly_rent')}</th>
+                  <th>{t('common.status')}</th>
+                  <th>{t('payments_page.method')}</th>
+                  <th>{t('building_summary.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {buildingSummary?.tenants?.length > 0 ? (
-                  buildingSummary.tenants.map((t, idx) => (
+                  buildingSummary.tenants.map((tenant, idx) => (
                     <tr key={idx}>
-                      <td className="fw-semibold">{t.unitNumber}</td>
-                      <td>{t.tenantName}</td>
+                      <td className="fw-semibold">{tenant.unitNumber}</td>
+                      <td>{tenant.tenantName}</td>
                       <td>
                         <small>
-                          {t.tenantEmail}<br />
-                          {t.tenantPhone || '-'}
+                          {tenant.tenantEmail}<br />
+                          {tenant.tenantPhone || '-'}
                         </small>
                       </td>
-                      <td className="fw-semibold">{t.monthlyRent?.toFixed(3)} KWD</td>
-                      <td>{getStatusBadge(t.paymentStatus)}</td>
-                      <td><small>{t.paymentMethod || '-'}</small></td>
+                      <td className="fw-semibold">{tenant.monthlyRent?.toFixed(3)} {t('common.kwd')}</td>
+                      <td>{getStatusBadge(tenant.paymentStatus)}</td>
+                      <td><small>{tenant.paymentMethod || '-'}</small></td>
                       <td>
-                        {t.paymentId && t.paymentStatus !== 'PAID' && (
+                        {tenant.paymentId && tenant.paymentStatus !== 'PAID' && (
                           <div className="d-flex gap-1">
                             <Button
                               variant="link"
                               size="sm"
                               className="text-success p-1"
-                              onClick={() => handleCreateLink(t.paymentId)}
-                              disabled={creatingLink === t.paymentId}
-                              title="Create Payment Link"
+                              onClick={() => handleCreateLink(tenant.paymentId)}
+                              disabled={creatingLink === tenant.paymentId}
+                              title={t('payments_page.create_link_notify')}
                             >
-                              {creatingLink === t.paymentId ? (
+                              {creatingLink === tenant.paymentId ? (
                                 <Spinner animation="border" size="sm" />
                               ) : (
                                 <i className="bi bi-link-45deg"></i>
                               )}
                             </Button>
-                            {t.tahseeelPaymentLink && (
+                            {tenant.tahseeelPaymentLink && (
                               <Button
                                 variant="link"
                                 size="sm"
                                 className="text-info p-1"
-                                onClick={() => window.open(t.tahseeelPaymentLink, '_blank')}
-                                title="Open Payment Link"
+                                onClick={() => window.open(tenant.tahseeelPaymentLink, '_blank')}
+                                title={t('payments_page.open_payment_link')}
                               >
                                 <i className="bi bi-box-arrow-up-right"></i>
                               </Button>
                             )}
                           </div>
                         )}
-                        {t.paymentStatus === 'PAID' && (
+                        {tenant.paymentStatus === 'PAID' && (
                           <small className="text-success">
                             <i className="bi bi-check-circle me-1"></i>
-                            {t.paidAt ? new Date(t.paidAt).toLocaleDateString() : 'Paid'}
+                            {tenant.paidAt ? new Date(tenant.paidAt).toLocaleDateString() : t('payments_page.status_paid')}
                           </small>
                         )}
                       </td>
@@ -319,7 +328,7 @@ const BuildingPaymentSummary = () => {
                 ) : (
                   <tr>
                     <td colSpan="7" className="text-center py-4 text-muted">
-                      No active tenancies found for this building
+                      {t('building_summary.no_tenancies')}
                     </td>
                   </tr>
                 )}

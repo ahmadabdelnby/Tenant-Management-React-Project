@@ -6,11 +6,13 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ToastContainer, Toast } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { clearNotification } from '../../store/slices/uiSlice';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
 const MainLayout = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { notification } = useSelector((state) => state.ui);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -56,7 +58,7 @@ const MainLayout = () => {
           <Toast.Header>
             <i className={`bi ${notification?.type === 'success' ? 'bi-check-circle' : notification?.type === 'error' ? 'bi-x-circle' : 'bi-info-circle'} me-2`}></i>
             <strong className="me-auto">
-              {notification?.type === 'success' ? 'Success' : notification?.type === 'error' ? 'Error' : 'Info'}
+              {notification?.type === 'success' ? t('common.success') : notification?.type === 'error' ? t('common.error') : t('common.info')}
             </strong>
           </Toast.Header>
           <Toast.Body className={notification?.type === 'success' || notification?.type === 'danger' ? 'text-white' : ''}>

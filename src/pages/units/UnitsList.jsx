@@ -5,12 +5,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import { fetchUnits, deleteUnit } from '../../store/slices/unitsSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 
 const UnitsList = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -43,7 +46,7 @@ const UnitsList = () => {
   const confirmDelete = async () => {
     try {
       await dispatch(deleteUnit(selectedUnit.id)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Unit deleted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.unit_deleted') }));
       setShowDeleteModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -60,7 +63,7 @@ const UnitsList = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-EG').format(amount) + ' EGP';
+    return new Intl.NumberFormat('en-US').format(amount) + ' ' + t('common.kwd');
   };
 
   return (
@@ -68,8 +71,8 @@ const UnitsList = () => {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1>Units</h1>
-          <p className="mb-0">Manage rental units</p>
+          <h1>{t('units.title')}</h1>
+          <p className="mb-0">{t('units.subtitle')}</p>
         </div>
         {user?.role === 'ADMIN' && (
           <Button variant="primary" onClick={() => navigate('/units/new')}>
@@ -90,9 +93,9 @@ const UnitsList = () => {
                   value={filters.buildingId}
                   onChange={handleFilterChange}
                 >
-                  <option value="">All Buildings</option>
+                  <option value="">{t('units.all_buildings')}</option>
                   {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
                   ))}
                 </Form.Select>
               </Col>
@@ -103,10 +106,10 @@ const UnitsList = () => {
                 value={filters.status}
                 onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
-                <option value="AVAILABLE">Available</option>
-                <option value="RENTED">Rented</option>
-                <option value="UNAVAILABLE">Unavailable</option>
+                <option value="">{t('units.all_statuses')}</option>
+                <option value="AVAILABLE">{t('units.available')}</option>
+                <option value="RENTED">{t('units.rented')}</option>
+                <option value="UNAVAILABLE">{t('units.unavailable')}</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -115,12 +118,12 @@ const UnitsList = () => {
                 value={filters.type}
                 onChange={handleFilterChange}
               >
-                <option value="">All Types</option>
-                <option value="APARTMENT">Apartment</option>
-                <option value="STUDIO">Studio</option>
-                <option value="VILLA">Villa</option>
-                <option value="OFFICE">Office</option>
-                <option value="SHOP">Shop</option>
+                <option value="">{t('units.all_types')}</option>
+                <option value="APARTMENT">{t('units.apartment')}</option>
+                <option value="STUDIO">{t('units.studio')}</option>
+                <option value="VILLA">{t('units.villa')}</option>
+                <option value="OFFICE">{t('units.office')}</option>
+                <option value="SHOP">{t('units.shop')}</option>
               </Form.Select>
             </Col>
           </Row>
@@ -138,13 +141,13 @@ const UnitsList = () => {
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>Unit</th>
-                  <th>Building</th>
-                  <th>Type</th>
-                  <th>Details</th>
-                  <th>Rent</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>{t('units.unit_col')}</th>
+                  <th>{t('units.building_col')}</th>
+                  <th>{t('units.type_col')}</th>
+                  <th>{t('units.details_col')}</th>
+                  <th>{t('units.rent_col')}</th>
+                  <th>{t('units.status_col')}</th>
+                  <th>{t('units.actions_col')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,12 +171,12 @@ const UnitsList = () => {
                           <div className="fw-semibold">{unit.unitNumber}</div>
                         </div>
                       </td>
-                      <td>{unit.building?.name || 'N/A'}</td>
+                      <td>{isAr ? (unit.building?.nameAr || unit.building?.nameEn) : (unit.building?.nameEn || unit.building?.name) || t('common.na')}</td>
                       <td>{unit.type}</td>
                       <td>
                         <small>
-                          <i className="bi bi-door-closed me-1"></i>{unit.bedrooms} bed
-                          <i className="bi bi-droplet ms-2 me-1"></i>{unit.bathrooms} bath
+                          <i className="bi bi-door-closed me-1"></i>{unit.bedrooms} {t('units.bed')}
+                          <i className="bi bi-droplet ms-2 me-1"></i>{unit.bathrooms} {t('units.bath')}
                           <i className="bi bi-arrows-fullscreen ms-2 me-1"></i>{unit.area}m²
                         </small>
                       </td>
@@ -219,7 +222,7 @@ const UnitsList = () => {
                 ) : (
                   <tr>
                     <td colSpan="7" className="text-center py-4 text-muted">
-                      No units found
+                      {t('units.no_units')}
                     </td>
                   </tr>
                 )}
@@ -232,18 +235,17 @@ const UnitsList = () => {
       {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Delete Unit</Modal.Title>
+          <Modal.Title>{t('units.delete_title')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete unit <strong>{selectedUnit?.unitNumber}</strong>?
-          This action cannot be undone.
-        </Modal.Body>
+        <Modal.Body
+          dangerouslySetInnerHTML={{ __html: t('units.delete_confirm', { name: selectedUnit?.unitNumber }) }}
+        />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Delete
+            {t('common.delete')}
           </Button>
         </Modal.Footer>
       </Modal>

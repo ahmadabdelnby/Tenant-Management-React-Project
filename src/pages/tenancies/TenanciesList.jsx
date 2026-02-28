@@ -5,12 +5,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchTenancies, deleteTenancy } from '../../store/slices/tenanciesSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import GeneratePaymentLinkModal from '../payments/GeneratePaymentLinkModal';
 
 const TenanciesList = () => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -19,6 +23,7 @@ const TenanciesList = () => {
   const [filters, setFilters] = useState({ isActive: '', buildingId: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTenancy, setSelectedTenancy] = useState(null);
+  const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false);
 
   const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
 
@@ -48,7 +53,7 @@ const TenanciesList = () => {
   const confirmDelete = async () => {
     try {
       await dispatch(deleteTenancy(selectedTenancy.id)).unwrap();
-      dispatch(showNotification({ type: 'success', message: 'Tenancy deleted successfully' }));
+      dispatch(showNotification({ type: 'success', message: t('notifications.tenancy_deleted') }));
       setShowDeleteModal(false);
     } catch (error) {
       dispatch(showNotification({ type: 'error', message: error }));
@@ -62,7 +67,7 @@ const TenanciesList = () => {
 
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '-';
-    return new Intl.NumberFormat('en-EG').format(amount) + ' EGP';
+    return new Intl.NumberFormat('en-US').format(amount) + ' ' + t('common.kwd');
   };
 
   return (
@@ -70,15 +75,23 @@ const TenanciesList = () => {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="page-header mb-0">
-          <h1>Tenancies</h1>
-          <p className="mb-0">Manage rental contracts</p>
+          <h1>{t('tenancies.title')}</h1>
+          <p className="mb-0">{t('tenancies.subtitle')}</p>
         </div>
-        {user?.role === 'ADMIN' && (
-          <Button variant="primary" onClick={() => navigate('/tenancies/new')}>
-            <i className="bi bi-plus-lg me-2"></i>
-            Add Tenancy
-          </Button>
-        )}
+        <div className="d-flex gap-2">
+          {isAdminOrOwner && (
+            <Button variant="outline-primary" onClick={() => setShowPaymentLinkModal(true)}>
+              <i className="bi bi-link-45deg me-2"></i>
+              {t('tenancies.generate_payment_link')}
+            </Button>
+          )}
+          {user?.role === 'ADMIN' && (
+            <Button variant="primary" onClick={() => navigate('/tenancies/new')}>
+              <i className="bi bi-plus-lg me-2"></i>
+              {t('tenancies.add_tenancy')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -92,9 +105,9 @@ const TenanciesList = () => {
                   value={filters.buildingId}
                   onChange={handleFilterChange}
                 >
-                  <option value="">All Buildings</option>
+                  <option value="">{t('tenancies.all_buildings')}</option>
                   {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
                   ))}
                 </Form.Select>
               </Col>
@@ -105,9 +118,9 @@ const TenanciesList = () => {
                 value={filters.isActive}
                 onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+                <option value="">{t('tenancies.all_statuses')}</option>
+                <option value="true">{t('users.active')}</option>
+                <option value="false">{t('users.inactive')}</option>
               </Form.Select>
             </Col>
           </Row>
@@ -125,12 +138,12 @@ const TenanciesList = () => {
             <Table hover responsive className="mb-0">
               <thead>
                 <tr>
-                  <th>Tenant</th>
-                  <th>Unit</th>
-                  <th>Period</th>
-                  <th>Rent</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>{t('tenancies.tenant_col')}</th>
+                  <th>{t('tenancies.unit_col')}</th>
+                  <th>{t('tenancies.period_col')}</th>
+                  <th>{t('tenancies.rent_col')}</th>
+                  <th>{t('tenancies.status_col')}</th>
+                  <th>{t('tenancies.actions_col')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,7 +178,7 @@ const TenanciesList = () => {
                       <td>{formatCurrency(tenancy.monthlyRent)}</td>
                       <td>
                         <Badge bg={tenancy.isActive ? 'success' : 'secondary'}>
-                          {tenancy.isActive ? 'Active' : 'Inactive'}
+                          {tenancy.isActive ? t('users.active') : t('users.inactive')}
                         </Badge>
                       </td>
                       <td>
@@ -206,7 +219,7 @@ const TenanciesList = () => {
                 ) : (
                   <tr>
                     <td colSpan="6" className="text-center py-4 text-muted">
-                      No tenancies found
+                      {t('tenancies.no_tenancies')}
                     </td>
                   </tr>
                 )}
@@ -219,21 +232,26 @@ const TenanciesList = () => {
       {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Delete Tenancy</Modal.Title>
+          <Modal.Title>{t('tenancies.delete_title')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete the tenancy for <strong>{selectedTenancy?.tenantName}</strong>?
-          This action cannot be undone.
-        </Modal.Body>
+        <Modal.Body
+          dangerouslySetInnerHTML={{ __html: t('tenancies.delete_confirm', { name: selectedTenancy?.tenantName }) }}
+        />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Delete
+            {t('common.delete')}
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Generate Payment Link Modal */}
+      <GeneratePaymentLinkModal
+        show={showPaymentLinkModal}
+        onHide={() => setShowPaymentLinkModal(false)}
+      />
     </div>
   );
 };
