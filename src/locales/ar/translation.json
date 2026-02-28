@@ -100,6 +100,7 @@
     "create_subtitle": "إضافة عقار جديد",
     "edit_subtitle": "تحديث معلومات المبنى",
     "back_to_buildings": "العودة إلى المباني",
+    "back_to_tenancy": "العودة إلى تفاصيل العقد",
     "building_name_en": "اسم المبنى (إنجليزي)",
     "building_name_ar": "اسم المبنى (عربي)",
     "building_name_en_placeholder": "مثال: Sunrise Tower",
@@ -449,6 +450,10 @@
     "kwd": "د.ك",
     "confirm_delete": "تأكيد الحذف",
     "clear": "مسح"
+  },
+
+  "pagination": {
+    "showing": "عرض {{start}} إلى {{end}} من {{total}} نتيجة"
   },
 
   "notifications": {

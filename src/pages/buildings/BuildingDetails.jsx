@@ -49,11 +49,11 @@ const BuildingDetails = () => {
         <Button
           variant="link"
           className="p-0 text-decoration-none mb-3"
-          onClick={() => navigate('/buildings')}
+          onClick={() => user?.role === 'TENANT' ? navigate(-1) : navigate('/buildings')}
           style={{ color: 'var(--navy-dark)' }}
         >
           <i className="bi bi-arrow-left me-2"></i>
-          {t('buildings.back_to_buildings')}
+          {user?.role === 'TENANT' ? t('buildings.back_to_tenancy') : t('buildings.back_to_buildings')}
         </Button>
         <div className="d-flex justify-content-between align-items-center">
           <div className="page-header mb-0">

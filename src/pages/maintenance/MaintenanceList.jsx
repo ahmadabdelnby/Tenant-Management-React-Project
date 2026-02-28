@@ -10,6 +10,7 @@ import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'reac
 import { fetchMaintenanceRequests, deleteMaintenanceRequest, updateMaintenanceRequest } from '../../store/slices/maintenanceSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import Pagination from '../../components/Pagination';
 import maintenanceService from '../../services/maintenanceService';
 
 const MaintenanceList = () => {
@@ -18,9 +19,10 @@ const MaintenanceList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { requests, isLoading } = useSelector((state) => state.maintenance);
+  const { requests, pagination, isLoading } = useSelector((state) => state.maintenance);
   const { buildings } = useSelector((state) => state.buildings);
   const [filters, setFilters] = useState({ status: '', priority: '', category: '', buildingId: '' });
+  const [page, setPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -34,11 +36,14 @@ const MaintenanceList = () => {
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
-    dispatch(fetchMaintenanceRequests(filters));
-  }, [dispatch, filters]);
+    dispatch(fetchMaintenanceRequests({ ...filters, page, limit: 10 }));
+  }, [dispatch, filters, page]);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setPage(1);
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -360,6 +365,7 @@ const MaintenanceList = () => {
             </Table>
           )}
         </Card.Body>
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </Card>
 
       {/* Delete Confirmation Modal */}

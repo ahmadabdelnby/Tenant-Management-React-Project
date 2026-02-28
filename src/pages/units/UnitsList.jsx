@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import { fetchUnits, deleteUnit } from '../../store/slices/unitsSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import Pagination from '../../components/Pagination';
 
 const UnitsList = () => {
   const { t, i18n } = useTranslation();
@@ -17,9 +19,10 @@ const UnitsList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { units, isLoading } = useSelector((state) => state.units);
+  const { units, pagination, isLoading } = useSelector((state) => state.units);
   const { buildings } = useSelector((state) => state.buildings);
   const [filters, setFilters] = useState({ status: '', type: '', buildingId: '' });
+  const [page, setPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
 
@@ -30,11 +33,14 @@ const UnitsList = () => {
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
-    dispatch(fetchUnits(filters));
-  }, [dispatch, filters]);
+    dispatch(fetchUnits({ ...filters, page, limit: 10 }));
+  }, [dispatch, filters, page]);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setPage(1);
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -77,7 +83,7 @@ const UnitsList = () => {
         {user?.role === 'ADMIN' && (
           <Button variant="primary" onClick={() => navigate('/units/new')}>
             <i className="bi bi-plus-lg me-2"></i>
-            Add Unit
+            {t('units.add_unit')}
           </Button>
         )}
       </div>
@@ -172,7 +178,7 @@ const UnitsList = () => {
                         </div>
                       </td>
                       <td>{isAr ? (unit.building?.nameAr || unit.building?.nameEn) : (unit.building?.nameEn || unit.building?.name) || t('common.na')}</td>
-                      <td>{unit.type}</td>
+                      <td>{t(`units.${unit.type?.toLowerCase()}`) || unit.type}</td>
                       <td>
                         <small>
                           <i className="bi bi-door-closed me-1"></i>{unit.bedrooms} {t('units.bed')}
@@ -182,7 +188,7 @@ const UnitsList = () => {
                       </td>
                       <td>{formatCurrency(unit.rentAmount)}</td>
                       <td>
-                        <Badge bg={getStatusBadge(unit.status)}>{unit.status}</Badge>
+                        <Badge bg={getStatusBadge(unit.status)}>{t(`units.${unit.status?.toLowerCase()}`) || unit.status}</Badge>
                       </td>
                       <td>
                         <Button
@@ -230,6 +236,7 @@ const UnitsList = () => {
             </Table>
           )}
         </Card.Body>
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </Card>
 
       {/* Delete Modal */}
@@ -238,7 +245,7 @@ const UnitsList = () => {
           <Modal.Title>{t('units.delete_title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body
-          dangerouslySetInnerHTML={{ __html: t('units.delete_confirm', { name: selectedUnit?.unitNumber }) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('units.delete_confirm', { name: selectedUnit?.unitNumber })) }}
         />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>

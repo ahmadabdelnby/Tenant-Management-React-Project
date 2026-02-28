@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import {
   fetchUsers,
@@ -14,22 +15,27 @@ import {
   deactivateUser,
 } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import Pagination from '../../components/Pagination';
 
 const UsersList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { users, isLoading } = useSelector((state) => state.users);
+  const { users, pagination, isLoading } = useSelector((state) => state.users);
   const [filters, setFilters] = useState({ role: '', search: '' });
+  const [page, setPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchUsers(filters));
-  }, [dispatch, filters]);
+    dispatch(fetchUsers({ ...filters, page, limit: 10 }));
+  }, [dispatch, filters, page]);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setPage(1);
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -203,6 +209,7 @@ const UsersList = () => {
             </Table>
           )}
         </Card.Body>
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </Card>
 
       {/* Delete Modal */}
@@ -211,7 +218,7 @@ const UsersList = () => {
           <Modal.Title>{t('users.delete_title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body
-          dangerouslySetInnerHTML={{ __html: t('users.delete_confirm', { name: `${selectedUser?.firstName} ${selectedUser?.lastName}` }) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('users.delete_confirm', { name: `${selectedUser?.firstName} ${selectedUser?.lastName}` })) }}
         />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>

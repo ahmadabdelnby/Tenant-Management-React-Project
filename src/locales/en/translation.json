@@ -100,6 +100,7 @@
     "create_subtitle": "Add a new property",
     "edit_subtitle": "Update building information",
     "back_to_buildings": "Back to Buildings",
+    "back_to_tenancy": "Back to Tenancy Details",
     "building_name_en": "Building Name (English)",
     "building_name_ar": "Building Name (Arabic)",
     "building_name_en_placeholder": "e.g., Sunrise Tower",
@@ -449,6 +450,10 @@
     "kwd": "KWD",
     "confirm_delete": "Confirm Delete",
     "clear": "Clear"
+  },
+
+  "pagination": {
+    "showing": "Showing {{start}} to {{end}} of {{total}} results"
   },
 
   "notifications": {

@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner } from 'react-bootstrap';
 import { fetchTenancies, deleteTenancy } from '../../store/slices/tenanciesSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import Pagination from '../../components/Pagination';
 import GeneratePaymentLinkModal from '../payments/GeneratePaymentLinkModal';
 
 const TenanciesList = () => {
@@ -18,9 +20,10 @@ const TenanciesList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { tenancies, isLoading } = useSelector((state) => state.tenancies);
+  const { tenancies, pagination, isLoading } = useSelector((state) => state.tenancies);
   const { buildings } = useSelector((state) => state.buildings);
   const [filters, setFilters] = useState({ isActive: '', buildingId: '' });
+  const [page, setPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTenancy, setSelectedTenancy] = useState(null);
   const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false);
@@ -37,11 +40,14 @@ const TenanciesList = () => {
       queryFilters.isActive = filters.isActive === 'true';
     }
     if (filters.buildingId) queryFilters.buildingId = filters.buildingId;
-    dispatch(fetchTenancies(queryFilters));
-  }, [dispatch, filters]);
+    dispatch(fetchTenancies({ ...queryFilters, page, limit: 10 }));
+  }, [dispatch, filters, page]);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setPage(1);
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -227,6 +233,7 @@ const TenanciesList = () => {
             </Table>
           )}
         </Card.Body>
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </Card>
 
       {/* Delete Modal */}
@@ -235,7 +242,7 @@ const TenanciesList = () => {
           <Modal.Title>{t('tenancies.delete_title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body
-          dangerouslySetInnerHTML={{ __html: t('tenancies.delete_confirm', { name: selectedTenancy?.tenantName }) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('tenancies.delete_confirm', { name: selectedTenancy?.tenantName })) }}
         />
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>

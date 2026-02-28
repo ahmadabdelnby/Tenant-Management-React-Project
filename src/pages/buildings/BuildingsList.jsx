@@ -6,28 +6,34 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Card, Table, Button, Form, Row, Col, Badge, Modal, Spinner, InputGroup } from 'react-bootstrap';
 import { fetchBuildings, deleteBuilding } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+import Pagination from '../../components/Pagination';
 
 const BuildingsList = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { buildings, isLoading } = useSelector((state) => state.buildings);
+  const { buildings, pagination, isLoading } = useSelector((state) => state.buildings);
   const [filters, setFilters] = useState({ search: '' });
+  const [page, setPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
 
   const isAr = i18n.language?.startsWith('ar');
 
   useEffect(() => {
-    dispatch(fetchBuildings(filters));
-  }, [dispatch, filters]);
+    dispatch(fetchBuildings({ ...filters, page, limit: 10 }));
+  }, [dispatch, filters, page]);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    setPage(1);
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -183,6 +189,7 @@ const BuildingsList = () => {
             </Table>
           )}
         </Card.Body>
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </Card>
 
       {/* Delete Modal */}
@@ -192,7 +199,7 @@ const BuildingsList = () => {
         </Modal.Header>
         <Modal.Body>
           <span dangerouslySetInnerHTML={{
-            __html: t('buildings.delete_confirm', { name: selectedBuilding ? getBuildingName(selectedBuilding) : '' })
+            __html: DOMPurify.sanitize(t('buildings.delete_confirm', { name: selectedBuilding ? getBuildingName(selectedBuilding) : '' }))
           }} />
         </Modal.Body>
         <Modal.Footer>
