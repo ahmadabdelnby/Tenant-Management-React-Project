@@ -12,6 +12,7 @@ import { fetchTenancies, deleteTenancy } from '../../store/slices/tenanciesSlice
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import Pagination from '../../components/Pagination';
+import SearchableSelect from '../../components/SearchableSelect';
 import GeneratePaymentLinkModal from '../payments/GeneratePaymentLinkModal';
 
 const TenanciesList = () => {
@@ -31,7 +32,7 @@ const TenanciesList = () => {
   const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
 
   useEffect(() => {
-    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 0 }));
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
@@ -106,28 +107,26 @@ const TenanciesList = () => {
           <Row className="g-3">
             {isAdminOrOwner && (
               <Col md={3}>
-                <Form.Select
+                <SearchableSelect
                   name="buildingId"
                   value={filters.buildingId}
                   onChange={handleFilterChange}
-                >
-                  <option value="">{t('tenancies.all_buildings')}</option>
-                  {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
-                  ))}
-                </Form.Select>
+                  placeholder={t('tenancies.all_buildings')}
+                  options={buildings?.map((b) => ({ value: String(b.id), label: isAr ? b.nameAr : b.nameEn })) || []}
+                />
               </Col>
             )}
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="isActive"
                 value={filters.isActive}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('tenancies.all_statuses')}</option>
-                <option value="true">{t('users.active')}</option>
-                <option value="false">{t('users.inactive')}</option>
-              </Form.Select>
+                placeholder={t('tenancies.all_statuses')}
+                options={[
+                  { value: 'true', label: t('users.active') },
+                  { value: 'false', label: t('users.inactive') },
+                ]}
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -189,33 +188,29 @@ const TenanciesList = () => {
                       </td>
                       <td>
                         <Button
-                          variant="link"
+                          variant="info"
                           size="sm"
-                          className="text-info p-1"
+                          className="me-1"
                           onClick={() => navigate(`/tenancies/${tenancy.id}`)}
-                          title="View"
                         >
-                          <i className="bi bi-eye"></i>
+                          {t('common.view')}
                         </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button
-                              variant="link"
+                              variant="primary"
                               size="sm"
-                              className="text-primary p-1"
+                              className="me-1"
                               onClick={() => navigate(`/tenancies/${tenancy.id}/edit`)}
-                              title="Edit"
                             >
-                              <i className="bi bi-pencil"></i>
+                              {t('common.edit')}
                             </Button>
                             <Button
-                              variant="link"
+                              variant="danger"
                               size="sm"
-                              className="text-danger p-1"
                               onClick={() => handleDelete(tenancy)}
-                              title="Delete"
                             >
-                              <i className="bi bi-trash"></i>
+                              {t('common.delete')}
                             </Button>
                           </>
                         )}

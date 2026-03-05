@@ -16,6 +16,7 @@ import {
 } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import Pagination from '../../components/Pagination';
+import SearchableSelect from '../../components/SearchableSelect';
 
 const UsersList = () => {
   const { t } = useTranslation();
@@ -110,16 +111,17 @@ const UsersList = () => {
               </InputGroup>
             </Col>
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="role"
                 value={filters.role}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('users.all_roles')}</option>
-                <option value="ADMIN">{t('users.admin')}</option>
-                <option value="OWNER">{t('users.owner')}</option>
-                <option value="TENANT">{t('users.tenant')}</option>
-              </Form.Select>
+                placeholder={t('users.all_roles')}
+                options={[
+                  { value: 'ADMIN', label: t('users.admin') },
+                  { value: 'OWNER', label: t('users.owner') },
+                  { value: 'TENANT', label: t('users.tenant') },
+                ]}
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -169,31 +171,27 @@ const UsersList = () => {
                       </td>
                       <td>
                         <Button
-                          variant="link"
+                          variant="primary"
                           size="sm"
-                          className="text-primary p-1"
+                          className="me-1"
                           onClick={() => navigate(`/users/${user.id}/edit`)}
-                          title="Edit"
                         >
-                          <i className="bi bi-pencil"></i>
+                          {t('common.edit')}
                         </Button>
                         <Button
-                          variant="link"
+                          variant={user.isActive ? 'warning' : 'success'}
                           size="sm"
-                          className={user.isActive ? 'text-warning p-1' : 'text-success p-1'}
+                          className="me-1"
                           onClick={() => handleToggleStatus(user)}
-                          title={user.isActive ? 'Deactivate' : 'Activate'}
                         >
-                          <i className={`bi ${user.isActive ? 'bi-pause-circle' : 'bi-play-circle'}`}></i>
+                          {user.isActive ? t('users.deactivate') : t('users.activate')}
                         </Button>
                         <Button
-                          variant="link"
+                          variant="danger"
                           size="sm"
-                          className="text-danger p-1"
                           onClick={() => handleDelete(user)}
-                          title="Delete"
                         >
-                          <i className="bi bi-trash"></i>
+                          {t('common.delete')}
                         </Button>
                       </td>
                     </tr>

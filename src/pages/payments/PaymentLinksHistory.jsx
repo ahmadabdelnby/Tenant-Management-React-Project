@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Card, Table, Badge, Spinner, Form, Row, Col, Button, InputGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 import paymentsService from '../../services/paymentsService';
 
 const PaymentLinksHistory = () => {
@@ -148,12 +149,34 @@ const PaymentLinksHistory = () => {
           <Row className="g-3 align-items-end">
             <Col md={3}>
               <Form.Label className="small text-muted mb-1">{t('common.status')}</Form.Label>
-              <Form.Select value={statusFilter} onChange={handleStatusFilter}>
-                <option value="">{t('maintenance.all_statuses')}</option>
-                <option value="Pending">{t('payments.status_pending')}</option>
-                <option value="Fulfilled">{t('payments.status_fulfilled')}</option>
-                <option value="Expired">{t('payments.status_expired')}</option>
-              </Form.Select>
+              <Select
+                value={[
+                  { value: 'Pending', label: t('payments.status_pending') },
+                  { value: 'Fulfilled', label: t('payments.status_fulfilled') },
+                  { value: 'Expired', label: t('payments.status_expired') },
+                ].find(opt => opt.value === statusFilter) || null}
+                onChange={(opt) => {
+                  const val = opt ? opt.value : '';
+                  setStatusFilter(val);
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                options={[
+                  { value: 'Pending', label: t('payments.status_pending') },
+                  { value: 'Fulfilled', label: t('payments.status_fulfilled') },
+                  { value: 'Expired', label: t('payments.status_expired') },
+                ]}
+                placeholder={t('maintenance.all_statuses')}
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
             <Col md={2}>
               <Button

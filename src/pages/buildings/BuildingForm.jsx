@@ -5,8 +5,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createBuilding,
@@ -35,11 +36,12 @@ const BuildingForm = () => {
     handleSubmit,
     reset,
     watch,
+    control,
     formState: { errors },
   } = useForm();
 
   useEffect(() => {
-    dispatch(fetchUsers({ role: 'OWNER' }));
+    dispatch(fetchUsers({ role: 'OWNER', limit: 0 }));
     if (isEdit) {
       dispatch(fetchBuildingById(id));
     }
@@ -238,20 +240,45 @@ const BuildingForm = () => {
               <Col md={isEdit ? 12 : 6}>
                 <Form.Group>
                   <Form.Label>{t('buildings.owner_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.ownerId}
-                    {...register('ownerId', { required: t('buildings.owner_label') + ' is required' })}
-                  >
-                    <option value="">{t('buildings.select_owner')}</option>
-                    {owners.map((owner) => (
-                      <option key={owner.id} value={owner.id}>
-                        {owner.firstName} {owner.lastName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.ownerId?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="ownerId"
+                    control={control}
+                    rules={{ required: t('buildings.owner_label') + ' is required' }}
+                    render={({ field }) => {
+                      const ownerOptions = owners.map((owner) => ({
+                        value: owner.id,
+                        label: `${owner.firstName} ${owner.lastName}`,
+                      }));
+                      const selectedOption = ownerOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={ownerOptions}
+                          placeholder={t('buildings.select_owner')}
+                          isClearable
+                          isSearchable
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.ownerId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.ownerId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.ownerId && (
+                    <div className="invalid-feedback d-block">{errors.ownerId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               {/* Description (English) */}

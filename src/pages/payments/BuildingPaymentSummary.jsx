@@ -12,6 +12,7 @@ import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import { paymentsService } from '../../services';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -40,7 +41,7 @@ const BuildingPaymentSummary = () => {
   const [creatingLink, setCreatingLink] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchBuildings({}));
+    dispatch(fetchBuildings({ limit: 0 }));
   }, [dispatch]);
 
   const loadSummary = useCallback(() => {
@@ -146,31 +147,65 @@ const BuildingPaymentSummary = () => {
           <Row className="g-3">
             <Col md={4}>
               <Form.Label className="small text-muted">{t('payments_page.building')}</Form.Label>
-              <Form.Select
-                value={selectedBuilding}
-                onChange={(e) => setSelectedBuilding(e.target.value)}
-              >
-                <option value="">{t('building_summary.select_building')}</option>
-                {buildings?.map(b => (
-                  <option key={b.id} value={b.id}>{isAr ? (b.nameAr || b.nameEn || b.name) : (b.nameEn || b.name)}</option>
-                ))}
-              </Form.Select>
+              <Select
+                value={(buildings || []).map(b => ({
+                  value: b.id,
+                  label: isAr ? (b.nameAr || b.nameEn || b.name) : (b.nameEn || b.name),
+                })).find(opt => String(opt.value) === String(selectedBuilding)) || null}
+                onChange={(opt) => setSelectedBuilding(opt ? opt.value : '')}
+                options={(buildings || []).map(b => ({
+                  value: b.id,
+                  label: isAr ? (b.nameAr || b.nameEn || b.name) : (b.nameEn || b.name),
+                }))}
+                placeholder={t('building_summary.select_building')}
+                isClearable
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
             <Col md={3}>
               <Form.Label className="small text-muted">{t('payments_page.month')}</Form.Label>
-              <Form.Select value={month} onChange={(e) => setMonth(parseInt(e.target.value))}>
-                {monthNames.slice(1).map((name, i) => (
-                  <option key={i + 1} value={i + 1}>{name}</option>
-                ))}
-              </Form.Select>
+              <Select
+                value={monthNames.slice(1).map((name, i) => ({ value: i + 1, label: name })).find(opt => opt.value === month) || null}
+                onChange={(opt) => setMonth(opt ? opt.value : '')}
+                options={monthNames.slice(1).map((name, i) => ({ value: i + 1, label: name }))}
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
             <Col md={2}>
               <Form.Label className="small text-muted">{t('payments_page.year')}</Form.Label>
-              <Form.Select value={year} onChange={(e) => setYear(parseInt(e.target.value))}>
-                {[2024, 2025, 2026].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </Form.Select>
+              <Select
+                value={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) })).find(opt => opt.value === year) || null}
+                onChange={(opt) => setYear(opt ? opt.value : '')}
+                options={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) }))}
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
           </Row>
         </Card.Body>

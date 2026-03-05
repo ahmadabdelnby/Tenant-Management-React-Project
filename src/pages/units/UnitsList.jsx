@@ -12,6 +12,7 @@ import { fetchUnits, deleteUnit } from '../../store/slices/unitsSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import Pagination from '../../components/Pagination';
+import SearchableSelect from '../../components/SearchableSelect';
 
 const UnitsList = () => {
   const { t, i18n } = useTranslation();
@@ -29,7 +30,7 @@ const UnitsList = () => {
   const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
 
   useEffect(() => {
-    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 0 }));
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
@@ -94,43 +95,47 @@ const UnitsList = () => {
           <Row className="g-3">
             {isAdminOrOwner && (
               <Col md={3}>
-                <Form.Select
+                <SearchableSelect
                   name="buildingId"
                   value={filters.buildingId}
                   onChange={handleFilterChange}
-                >
-                  <option value="">{t('units.all_buildings')}</option>
-                  {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
-                  ))}
-                </Form.Select>
+                  placeholder={t('units.all_buildings')}
+                  options={[
+                    { value: '', label: t('units.all_buildings') },
+                    ...(buildings?.map((b) => ({ value: String(b.id), label: isAr ? b.nameAr : b.nameEn })) || []),
+                  ]}
+                />
               </Col>
             )}
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('units.all_statuses')}</option>
-                <option value="AVAILABLE">{t('units.available')}</option>
-                <option value="RENTED">{t('units.rented')}</option>
-                <option value="UNAVAILABLE">{t('units.unavailable')}</option>
-              </Form.Select>
+                placeholder={t('units.all_statuses')}
+                options={[
+                  { value: '', label: t('units.all_statuses') },
+                  { value: 'AVAILABLE', label: t('units.available') },
+                  { value: 'RENTED', label: t('units.rented') },
+                  { value: 'UNAVAILABLE', label: t('units.unavailable') },
+                ]}
+              />
             </Col>
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="type"
                 value={filters.type}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('units.all_types')}</option>
-                <option value="APARTMENT">{t('units.apartment')}</option>
-                <option value="STUDIO">{t('units.studio')}</option>
-                <option value="VILLA">{t('units.villa')}</option>
-                <option value="OFFICE">{t('units.office')}</option>
-                <option value="SHOP">{t('units.shop')}</option>
-              </Form.Select>
+                placeholder={t('units.all_types')}
+                options={[
+                  { value: '', label: t('units.all_types') },
+                  { value: 'APARTMENT', label: t('units.apartment') },
+                  { value: 'STUDIO', label: t('units.studio') },
+                  { value: 'VILLA', label: t('units.villa') },
+                  { value: 'OFFICE', label: t('units.office') },
+                  { value: 'SHOP', label: t('units.shop') },
+                ]}
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -192,33 +197,29 @@ const UnitsList = () => {
                       </td>
                       <td>
                         <Button
-                          variant="link"
+                          variant="info"
                           size="sm"
-                          className="text-info p-1"
+                          className="me-1"
                           onClick={() => navigate(`/buildings/${unit.buildingId || unit.building?.id}`)}
-                          title="View Building"
                         >
-                          <i className="bi bi-eye"></i>
+                          {t('common.view')}
                         </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button
-                              variant="link"
+                              variant="primary"
                               size="sm"
-                              className="text-primary p-1"
+                              className="me-1"
                               onClick={() => navigate(`/units/${unit.id}/edit`)}
-                              title="Edit"
                             >
-                              <i className="bi bi-pencil"></i>
+                              {t('common.edit')}
                             </Button>
                             <Button
-                              variant="link"
+                              variant="danger"
                               size="sm"
-                              className="text-danger p-1"
                               onClick={() => handleDelete(unit)}
-                              title="Delete"
                             >
-                              <i className="bi bi-trash"></i>
+                              {t('common.delete')}
                             </Button>
                           </>
                         )}

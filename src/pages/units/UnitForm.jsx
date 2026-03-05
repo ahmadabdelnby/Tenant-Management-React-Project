@@ -5,8 +5,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createUnit,
@@ -32,11 +33,12 @@ const UnitForm = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm();
 
   useEffect(() => {
-    dispatch(fetchBuildings());
+    dispatch(fetchBuildings({ limit: 0 }));
     if (isEdit) {
       dispatch(fetchUnitById(id));
     }
@@ -113,20 +115,47 @@ const UnitForm = () => {
               <Col md={12}>
                 <Form.Group>
                   <Form.Label>{t('units.building_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.buildingId}
-                    {...register('buildingId', { required: t('units.select_building') })}
-                  >
-                    <option value="">{t('units.select_building')}</option>
-                    {buildings.map((building) => (
-                      <option key={building.id} value={building.id}>
-                        {isAr ? building.nameAr : building.nameEn}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.buildingId?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="buildingId"
+                    control={control}
+                    rules={{ required: t('units.select_building') }}
+                    render={({ field }) => {
+                      const buildingOptions = buildings.map((b) => ({
+                        value: b.id,
+                        label: isAr ? b.nameAr : b.nameEn,
+                      }));
+                      const selectedOption = buildingOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          {...field}
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={buildingOptions}
+                          placeholder={t('units.select_building')}
+                          isClearable
+                          isSearchable
+                          isRtl={isAr}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.buildingId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.buildingId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.buildingId && (
+                    <div className="invalid-feedback d-block">{errors.buildingId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -236,20 +265,49 @@ const UnitForm = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('units.type')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.type}
-                    {...register('type', { required: t('units.select_type') })}
-                  >
-                    <option value="">{t('units.select_type')}</option>
-                    <option value="APARTMENT">{t('units.apartment')}</option>
-                    <option value="STUDIO">{t('units.studio')}</option>
-                    <option value="VILLA">{t('units.villa')}</option>
-                    <option value="OFFICE">{t('units.office')}</option>
-                    <option value="SHOP">{t('units.shop')}</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.type?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="type"
+                    control={control}
+                    rules={{ required: t('units.select_type') }}
+                    render={({ field }) => {
+                      const typeOptions = [
+                        { value: 'APARTMENT', label: t('units.apartment') },
+                        { value: 'STUDIO', label: t('units.studio') },
+                        { value: 'VILLA', label: t('units.villa') },
+                        { value: 'OFFICE', label: t('units.office') },
+                        { value: 'SHOP', label: t('units.shop') },
+                      ];
+                      const selectedOption = typeOptions.find(
+                        (opt) => opt.value === field.value
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={typeOptions}
+                          placeholder={t('units.select_type')}
+                          isClearable
+                          isSearchable
+                          isRtl={isAr}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.type ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.type
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.type && (
+                    <div className="invalid-feedback d-block">{errors.type.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               {isEdit && (
@@ -269,10 +327,39 @@ const UnitForm = () => {
                         </Form.Text>
                       </>
                     ) : (
-                      <Form.Select {...register('status')}>
-                        <option value="AVAILABLE">{t('units.available')}</option>
-                        <option value="UNAVAILABLE">{t('units.unavailable')}</option>
-                      </Form.Select>
+                      <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => {
+                          const statusOptions = [
+                            { value: 'AVAILABLE', label: t('units.available') },
+                            { value: 'UNAVAILABLE', label: t('units.unavailable') },
+                          ];
+                          const selectedOption = statusOptions.find(
+                            (opt) => opt.value === field.value
+                          ) || null;
+                          return (
+                            <Select
+                              value={selectedOption}
+                              onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                              options={statusOptions}
+                              placeholder={t('units.status')}
+                              isSearchable
+                              isRtl={isAr}
+                              styles={{
+                                control: (base, state) => ({
+                                  ...base,
+                                  minHeight: '38px',
+                                  borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                                  boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                                  '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                                }),
+                                menu: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
+                            />
+                          );
+                        }}
+                      />
                     )}
                   </Form.Group>
                 </Col>

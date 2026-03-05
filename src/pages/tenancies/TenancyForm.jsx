@@ -5,8 +5,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createTenancy,
@@ -41,6 +42,7 @@ const TenancyForm = () => {
     reset,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm();
 
@@ -48,8 +50,8 @@ const TenancyForm = () => {
   const selectedUnitId = watch('unitId');
 
   useEffect(() => {
-    dispatch(fetchBuildings({ limit: 100 }));
-    dispatch(fetchUsers({ role: 'TENANT', limit: 100 }));
+    dispatch(fetchBuildings({ limit: 0 }));
+    dispatch(fetchUsers({ role: 'TENANT', limit: 0 }));
     if (isEdit) {
       dispatch(fetchTenancyById(id));
     }
@@ -61,7 +63,7 @@ const TenancyForm = () => {
   // When building is selected, fetch units for that building
   useEffect(() => {
     if (selectedBuildingId) {
-      dispatch(fetchUnits({ buildingId: selectedBuildingId, limit: 100 }));
+      dispatch(fetchUnits({ buildingId: selectedBuildingId, limit: 0 }));
     }
   }, [dispatch, selectedBuildingId]);
 
@@ -72,7 +74,7 @@ const TenancyForm = () => {
       setValue('buildingId', currentTenancy.unit?.buildingId?.toString() || '');
       // Then fetch units for that building
       if (currentTenancy.unit?.buildingId) {
-        dispatch(fetchUnits({ buildingId: currentTenancy.unit.buildingId, limit: 100 }));
+        dispatch(fetchUnits({ buildingId: currentTenancy.unit.buildingId, limit: 0 }));
       }
     }
   }, [currentTenancy, isEdit, setValue, dispatch]);
@@ -163,63 +165,140 @@ const TenancyForm = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('tenancies.tenant_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.tenantId}
-                    {...register('tenantId', { required: t('tenancies.select_tenant') })}
-                  >
-                    <option value="">{t('tenancies.select_tenant')}</option>
-                    {tenants.map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.firstName} {tenant.lastName} ({tenant.email})
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.tenantId?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="tenantId"
+                    control={control}
+                    rules={{ required: t('tenancies.select_tenant') }}
+                    render={({ field }) => {
+                      const tenantOptions = tenants.map((tenant) => ({
+                        value: tenant.id,
+                        label: `${tenant.firstName} ${tenant.lastName} (${tenant.email})`,
+                      }));
+                      const selectedOption = tenantOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={tenantOptions}
+                          placeholder={t('tenancies.select_tenant')}
+                          isClearable
+                          isSearchable
+                          isRtl={isAr}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.tenantId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.tenantId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.tenantId && (
+                    <div className="invalid-feedback d-block">{errors.tenantId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('tenancies.building_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.buildingId}
-                    {...register('buildingId', { required: t('tenancies.select_building') })}
-                    onChange={(e) => {
-                      setValue('buildingId', e.target.value);
-                      setValue('unitId', '');
+                  <Controller
+                    name="buildingId"
+                    control={control}
+                    rules={{ required: t('tenancies.select_building') }}
+                    render={({ field }) => {
+                      const buildingOptions = buildings.map((b) => ({
+                        value: b.id,
+                        label: `${isAr ? b.nameAr : b.nameEn} — ${b.address}`,
+                      }));
+                      const selectedOption = buildingOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => {
+                            field.onChange(opt ? opt.value : '');
+                            setValue('unitId', '');
+                          }}
+                          options={buildingOptions}
+                          placeholder={t('tenancies.select_building')}
+                          isClearable
+                          isSearchable
+                          isRtl={isAr}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.buildingId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.buildingId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
                     }}
-                  >
-                    <option value="">{t('tenancies.select_building')}</option>
-                    {buildings.map((building) => (
-                      <option key={building.id} value={building.id}>
-                        {isAr ? building.nameAr : building.nameEn} — {building.address}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.buildingId?.message}
-                  </Form.Control.Feedback>
+                  />
+                  {errors.buildingId && (
+                    <div className="invalid-feedback d-block">{errors.buildingId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('tenancies.unit_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.unitId}
-                    disabled={!selectedBuildingId}
-                    {...register('unitId', { required: t('tenancies.select_unit') })}
-                  >
-                    <option value="">{selectedBuildingId ? t('tenancies.select_unit') : t('tenancies.select_building_first')}</option>
-                    {availableUnits.map((unit) => (
-                      <option key={unit.id} value={unit.id}>
-                        {unit.unitNumber} ({unit.type}) — {unit.status}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.unitId?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="unitId"
+                    control={control}
+                    rules={{ required: t('tenancies.select_unit') }}
+                    render={({ field }) => {
+                      const unitOptions = availableUnits.map((unit) => ({
+                        value: unit.id,
+                        label: `${unit.unitNumber} (${unit.type}) — ${unit.status}`,
+                      }));
+                      const selectedOption = unitOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={unitOptions}
+                          placeholder={selectedBuildingId ? t('tenancies.select_unit') : t('tenancies.select_building_first')}
+                          isClearable
+                          isSearchable
+                          isDisabled={!selectedBuildingId}
+                          isRtl={isAr}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.unitId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.unitId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.unitId && (
+                    <div className="invalid-feedback d-block">{errors.unitId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={6}>

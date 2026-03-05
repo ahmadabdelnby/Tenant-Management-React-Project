@@ -5,8 +5,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import Select from 'react-select';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createUser,
@@ -29,6 +30,7 @@ const UserForm = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm();
 
@@ -183,18 +185,46 @@ const UserForm = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('users.role')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.role}
-                    {...register('role', { required: t('users.role_required') })}
-                  >
-                    <option value="">{t('users.select_role')}</option>
-                    <option value="ADMIN">{t('users.admin')}</option>
-                    <option value="OWNER">{t('users.owner')}</option>
-                    <option value="TENANT">{t('users.tenant')}</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.role?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="role"
+                    control={control}
+                    rules={{ required: t('users.role_required') }}
+                    render={({ field }) => {
+                      const roleOptions = [
+                        { value: 'ADMIN', label: t('users.admin') },
+                        { value: 'OWNER', label: t('users.owner') },
+                        { value: 'TENANT', label: t('users.tenant') },
+                      ];
+                      const selectedOption = roleOptions.find(
+                        (opt) => opt.value === field.value
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={roleOptions}
+                          placeholder={t('users.select_role')}
+                          isClearable
+                          isSearchable
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.role ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.role
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.role && (
+                    <div className="invalid-feedback d-block">{errors.role.message}</div>
+                  )}
                 </Form.Group>
               </Col>
             </Row>

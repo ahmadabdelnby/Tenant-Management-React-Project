@@ -75,7 +75,7 @@ const BuildingsList = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row className="g-3">
-            <Col md={4}>
+            <Col md={12}>
               <InputGroup>
                 <InputGroup.Text>
                   <i className="bi bi-search"></i>
@@ -145,33 +145,29 @@ const BuildingsList = () => {
                       </td>
                       <td>
                         <Button
-                          variant="link"
+                          variant="info"
                           size="sm"
-                          className="text-info p-1"
+                          className="me-1"
                           onClick={() => navigate(`/buildings/${building.id}`)}
-                          title={t('buildings.view')}
                         >
-                          <i className="bi bi-eye"></i>
+                          {t('buildings.view')}
                         </Button>
                         {user?.role === 'ADMIN' && (
                           <>
                             <Button
-                              variant="link"
+                              variant="primary"
                               size="sm"
-                              className="text-primary p-1"
+                              className="me-1"
                               onClick={() => navigate(`/buildings/${building.id}/edit`)}
-                              title={t('buildings.edit')}
                             >
-                              <i className="bi bi-pencil"></i>
+                              {t('buildings.edit')}
                             </Button>
                             <Button
-                              variant="link"
+                              variant="danger"
                               size="sm"
-                              className="text-danger p-1"
                               onClick={() => handleDelete(building)}
-                              title={t('buildings.delete')}
                             >
-                              <i className="bi bi-trash"></i>
+                              {t('buildings.delete')}
                             </Button>
                           </>
                         )}

@@ -14,6 +14,8 @@ import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import { paymentsService } from '../../services';
 import { useTranslation } from 'react-i18next';
+import SearchableSelect from '../../components/SearchableSelect';
+import Select from 'react-select';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -68,7 +70,7 @@ const PaymentsList = () => {
   }, [dispatch, filters]);
 
   useEffect(() => {
-    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 0 }));
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
@@ -217,41 +219,49 @@ const PaymentsList = () => {
             {isAdminOrOwner && (
               <Col md={3}>
                 <Form.Label className="small text-muted">{t('payments_page.building')}</Form.Label>
-                <Form.Select name="buildingId" value={filters.buildingId} onChange={handleFilterChange}>
-                  <option value="">{t('payments_page.all_buildings')}</option>
-                  {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{isAr ? (b.nameAr || b.nameEn) : (b.nameEn || b.name)}</option>
-                  ))}
-                </Form.Select>
+                <SearchableSelect
+                  name="buildingId"
+                  value={filters.buildingId}
+                  onChange={handleFilterChange}
+                  placeholder={t('payments_page.all_buildings')}
+                  options={buildings?.map((b) => ({ value: String(b.id), label: isAr ? (b.nameAr || b.nameEn) : (b.nameEn || b.name) })) || []}
+                />
               </Col>
             )}
             <Col md={2}>
               <Form.Label className="small text-muted">{t('payments_page.month')}</Form.Label>
-              <Form.Select name="month" value={filters.month} onChange={handleFilterChange}>
-                <option value="">{t('payments_page.all_months')}</option>
-                {monthNames.slice(1).map((name, i) => (
-                  <option key={i + 1} value={i + 1}>{name}</option>
-                ))}
-              </Form.Select>
+              <SearchableSelect
+                name="month"
+                value={filters.month}
+                onChange={handleFilterChange}
+                placeholder={t('payments_page.all_months')}
+                options={monthNames.slice(1).map((name, i) => ({ value: String(i + 1), label: name }))}
+              />
             </Col>
             <Col md={2}>
               <Form.Label className="small text-muted">{t('payments_page.year')}</Form.Label>
-              <Form.Select name="year" value={filters.year} onChange={handleFilterChange}>
-                <option value="">{t('payments_page.all_years')}</option>
-                {[2024, 2025, 2026].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </Form.Select>
+              <SearchableSelect
+                name="year"
+                value={filters.year}
+                onChange={handleFilterChange}
+                placeholder={t('payments_page.all_years')}
+                options={[2024, 2025, 2026].map(y => ({ value: String(y), label: String(y) }))}
+              />
             </Col>
             <Col md={2}>
               <Form.Label className="small text-muted">{t('common.status')}</Form.Label>
-              <Form.Select name="status" value={filters.status} onChange={handleFilterChange}>
-                <option value="">{t('payments_page.all_statuses')}</option>
-                <option value="PAID">{t('payments_page.status_paid')}</option>
-                <option value="PENDING">{t('payments_page.status_pending')}</option>
-                <option value="OVERDUE">{t('payments_page.status_overdue')}</option>
-                <option value="PARTIALLY_PAID">{t('payments_page.status_partial')}</option>
-              </Form.Select>
+              <SearchableSelect
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+                placeholder={t('payments_page.all_statuses')}
+                options={[
+                  { value: 'PAID', label: t('payments_page.status_paid') },
+                  { value: 'PENDING', label: t('payments_page.status_pending') },
+                  { value: 'OVERDUE', label: t('payments_page.status_overdue') },
+                  { value: 'PARTIALLY_PAID', label: t('payments_page.status_partial') },
+                ]}
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -323,39 +333,33 @@ const PaymentsList = () => {
                             {isAdminOrOwner && (
                               <>
                                 <Button
-                                  variant="link"
+                                  variant="primary"
                                   size="sm"
-                                  className="text-primary p-1"
                                   onClick={() => handleUpdateClick(payment)}
-                                  title={t('payments_page.update_payment')}
                                 >
-                                  <i className="bi bi-pencil"></i>
+                                  {t('payments_page.update_payment')}
                                 </Button>
                                 {payment.status !== 'PAID' && (
                                   <Button
-                                    variant="link"
+                                    variant="success"
                                     size="sm"
-                                    className="text-success p-1"
                                     onClick={() => handleCreateLink(payment.id)}
                                     disabled={creatingLink === payment.id}
-                                    title={t('payments_page.create_link_notify')}
                                   >
                                     {creatingLink === payment.id ? (
                                       <Spinner animation="border" size="sm" />
                                     ) : (
-                                      <i className="bi bi-link-45deg"></i>
+                                      t('payments_page.create_link_notify')
                                     )}
                                   </Button>
                                 )}
                                 {payment.tahseeelPaymentLink && (
                                   <Button
-                                    variant="link"
+                                    variant="info"
                                     size="sm"
-                                    className="text-info p-1"
                                     onClick={() => window.open(payment.tahseeelPaymentLink, '_blank')}
-                                    title={t('payments_page.open_payment_link')}
                                   >
-                                    <i className="bi bi-box-arrow-up-right"></i>
+                                    {t('payments_page.open_payment_link')}
                                   </Button>
                                 )}
                               </>
@@ -365,9 +369,7 @@ const PaymentsList = () => {
                                 variant="success"
                                 size="sm"
                                 onClick={() => window.open(payment.tahseeelPaymentLink, '_blank')}
-                                title={t('payments_page.pay_now')}
                               >
-                                <i className="bi bi-credit-card me-1"></i>
                                 {t('payments_page.pay')}
                               </Button>
                             )}
@@ -412,25 +414,39 @@ const PaymentsList = () => {
           <Row className="g-3">
             <Col md={6}>
               <Form.Label>{t('payments_page.month')}</Form.Label>
-              <Form.Select
-                value={generateData.month}
-                onChange={(e) => setGenerateData({ ...generateData, month: parseInt(e.target.value) })}
-              >
-                {monthNames.slice(1).map((name, i) => (
-                  <option key={i + 1} value={i + 1}>{name}</option>
-                ))}
-              </Form.Select>
+              <Select
+                value={monthNames.slice(1).map((name, i) => ({ value: i + 1, label: name })).find(opt => opt.value === generateData.month) || null}
+                onChange={(opt) => setGenerateData({ ...generateData, month: opt ? opt.value : '' })}
+                options={monthNames.slice(1).map((name, i) => ({ value: i + 1, label: name }))}
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
             <Col md={6}>
               <Form.Label>{t('payments_page.year')}</Form.Label>
-              <Form.Select
-                value={generateData.year}
-                onChange={(e) => setGenerateData({ ...generateData, year: parseInt(e.target.value) })}
-              >
-                {[2024, 2025, 2026].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </Form.Select>
+              <Select
+                value={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) })).find(opt => opt.value === generateData.year) || null}
+                onChange={(opt) => setGenerateData({ ...generateData, year: opt ? opt.value : '' })}
+                options={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) }))}
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base, minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Col>
           </Row>
         </Modal.Body>
@@ -463,28 +479,61 @@ const PaymentsList = () => {
           )}
           <Form.Group className="mb-3">
             <Form.Label>{t('common.status')}</Form.Label>
-            <Form.Select
-              value={updateData.status}
-              onChange={(e) => setUpdateData({ ...updateData, status: e.target.value })}
-            >
-              <option value="PENDING">{t('payments_page.status_pending')}</option>
-              <option value="PAID">{t('payments_page.status_paid')}</option>
-              <option value="OVERDUE">{t('payments_page.status_overdue')}</option>
-              <option value="PARTIALLY_PAID">{t('payments_page.status_partial')}</option>
-            </Form.Select>
+            <Select
+              value={[
+                { value: 'PENDING', label: t('payments_page.status_pending') },
+                { value: 'PAID', label: t('payments_page.status_paid') },
+                { value: 'OVERDUE', label: t('payments_page.status_overdue') },
+                { value: 'PARTIALLY_PAID', label: t('payments_page.status_partial') },
+              ].find(opt => opt.value === updateData.status) || null}
+              onChange={(opt) => setUpdateData({ ...updateData, status: opt ? opt.value : '' })}
+              options={[
+                { value: 'PENDING', label: t('payments_page.status_pending') },
+                { value: 'PAID', label: t('payments_page.status_paid') },
+                { value: 'OVERDUE', label: t('payments_page.status_overdue') },
+                { value: 'PARTIALLY_PAID', label: t('payments_page.status_partial') },
+              ]}
+              isSearchable
+              isRtl={isAr}
+              styles={{
+                control: (base, state) => ({
+                  ...base, minHeight: '38px',
+                  borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                  boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                }),
+                menu: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+            />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>{t('payments_page.payment_method')}</Form.Label>
-            <Form.Select
-              value={updateData.paymentMethod}
-              onChange={(e) => setUpdateData({ ...updateData, paymentMethod: e.target.value })}
-            >
-              <option value="">{t('payments_page.select_method')}</option>
-              <option value="CASH">{t('payments_page.method_cash')}</option>
-              <option value="BANK_TRANSFER">{t('payments_page.method_bank')}</option>
-              <option value="TAHSEEEL">{t('payments_page.method_tahseeel')}</option>
-              <option value="OTHER">{t('payments_page.method_other')}</option>
-            </Form.Select>
+            <Select
+              value={[
+                { value: 'CASH', label: t('payments_page.method_cash') },
+                { value: 'BANK_TRANSFER', label: t('payments_page.method_bank') },
+                { value: 'TAHSEEEL', label: t('payments_page.method_tahseeel') },
+                { value: 'OTHER', label: t('payments_page.method_other') },
+              ].find(opt => opt.value === updateData.paymentMethod) || null}
+              onChange={(opt) => setUpdateData({ ...updateData, paymentMethod: opt ? opt.value : '' })}
+              options={[
+                { value: 'CASH', label: t('payments_page.method_cash') },
+                { value: 'BANK_TRANSFER', label: t('payments_page.method_bank') },
+                { value: 'TAHSEEEL', label: t('payments_page.method_tahseeel') },
+                { value: 'OTHER', label: t('payments_page.method_other') },
+              ]}
+              placeholder={t('payments_page.select_method')}
+              isClearable
+              isSearchable
+              isRtl={isAr}
+              styles={{
+                control: (base, state) => ({
+                  ...base, minHeight: '38px',
+                  borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                  boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                }),
+                menu: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+            />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>{t('payments_page.notes')}</Form.Label>

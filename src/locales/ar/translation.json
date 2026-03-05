@@ -416,7 +416,9 @@
     "role_required": "الدور مطلوب",
     "min_2_chars": "حرفان على الأقل",
     "min_8_chars": "٨ أحرف على الأقل",
-    "password_pattern": "يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام"
+    "password_pattern": "يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام",
+    "activate": "تفعيل",
+    "deactivate": "تعطيل"
   },
 
   "common": {

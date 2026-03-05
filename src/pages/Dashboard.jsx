@@ -17,17 +17,17 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const { buildings } = useSelector((state) => state.buildings);
-  const { units } = useSelector((state) => state.units);
-  const { tenancies } = useSelector((state) => state.tenancies);
-  const { users } = useSelector((state) => state.users);
+  const { buildings, pagination: buildingsPagination } = useSelector((state) => state.buildings);
+  const { units, pagination: unitsPagination } = useSelector((state) => state.units);
+  const { tenancies, pagination: tenanciesPagination } = useSelector((state) => state.tenancies);
+  const { users, pagination: usersPagination } = useSelector((state) => state.users);
 
   useEffect(() => {
     if (user?.role === 'ADMIN' || user?.role === 'OWNER') {
-      dispatch(fetchBuildings());
+      dispatch(fetchBuildings({ limit: 0 }));
       dispatch(fetchUnits());
     }
-    dispatch(fetchTenancies());
+    dispatch(fetchTenancies({ isActive: true }));
     if (user?.role === 'ADMIN') {
       dispatch(fetchUsers());
     }
@@ -36,7 +36,7 @@ const Dashboard = () => {
   const statsCards = [
     {
       titleKey: 'dashboard.total_buildings',
-      value: buildings.length || 0,
+      value: buildingsPagination?.totalItems || buildings.length || 0,
       icon: 'bi-building',
       color: 'primary',
       link: '/buildings',
@@ -44,7 +44,7 @@ const Dashboard = () => {
     },
     {
       titleKey: 'dashboard.total_units',
-      value: units.length || 0,
+      value: unitsPagination?.totalItems || units.length || 0,
       icon: 'bi-door-open',
       color: 'secondary',
       link: '/units',
@@ -52,7 +52,7 @@ const Dashboard = () => {
     },
     {
       titleKey: 'dashboard.active_tenancies',
-      value: tenancies.filter(tn => tn.isActive).length || 0,
+      value: tenanciesPagination?.totalItems || tenancies.length || 0,
       icon: 'bi-file-earmark-text',
       color: 'success',
       link: '/tenancies',
@@ -60,7 +60,7 @@ const Dashboard = () => {
     },
     {
       titleKey: 'dashboard.total_users',
-      value: users.length || 0,
+      value: usersPagination?.totalItems || users.length || 0,
       icon: 'bi-people',
       color: 'info',
       link: '/users',

@@ -11,6 +11,8 @@ import { fetchMaintenanceRequests, deleteMaintenanceRequest, updateMaintenanceRe
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import Pagination from '../../components/Pagination';
+import SearchableSelect from '../../components/SearchableSelect';
+import Select from 'react-select';
 import maintenanceService from '../../services/maintenanceService';
 
 const MaintenanceList = () => {
@@ -32,7 +34,7 @@ const MaintenanceList = () => {
   const isAdminOrOwner = user?.role === 'ADMIN' || user?.role === 'OWNER';
 
   useEffect(() => {
-    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 100 }));
+    if (isAdminOrOwner) dispatch(fetchBuildings({ limit: 0 }));
   }, [dispatch, isAdminOrOwner]);
 
   useEffect(() => {
@@ -185,58 +187,58 @@ const MaintenanceList = () => {
           <Row className="g-3">
             {isAdminOrOwner && (
               <Col md={3}>
-                <Form.Select
+                <SearchableSelect
                   name="buildingId"
                   value={filters.buildingId}
                   onChange={handleFilterChange}
-                >
-                  <option value="">{t('maintenance.all_buildings')}</option>
-                  {buildings?.map((b) => (
-                    <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.nameEn}</option>
-                  ))}
-                </Form.Select>
+                  placeholder={t('maintenance.all_buildings')}
+                  options={buildings?.map((b) => ({ value: String(b.id), label: isAr ? b.nameAr : b.nameEn })) || []}
+                />
               </Col>
             )}
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('maintenance.all_statuses')}</option>
-                <option value="PENDING">{t('maintenance.status_pending')}</option>
-                <option value="IN_PROGRESS">{t('maintenance.status_in_progress')}</option>
-                <option value="COMPLETED">{t('maintenance.status_completed')}</option>
-                <option value="CANCELLED">{t('maintenance.status_cancelled')}</option>
-              </Form.Select>
+                placeholder={t('maintenance.all_statuses')}
+                options={[
+                  { value: 'PENDING', label: t('maintenance.status_pending') },
+                  { value: 'IN_PROGRESS', label: t('maintenance.status_in_progress') },
+                  { value: 'COMPLETED', label: t('maintenance.status_completed') },
+                  { value: 'CANCELLED', label: t('maintenance.status_cancelled') },
+                ]}
+              />
             </Col>
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="priority"
                 value={filters.priority}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('maintenance.all_priorities')}</option>
-                <option value="LOW">{t('maintenance.priority_low')}</option>
-                <option value="MEDIUM">{t('maintenance.priority_medium')}</option>
-                <option value="HIGH">{t('maintenance.priority_high')}</option>
-                <option value="URGENT">{t('maintenance.priority_urgent')}</option>
-              </Form.Select>
+                placeholder={t('maintenance.all_priorities')}
+                options={[
+                  { value: 'LOW', label: t('maintenance.priority_low') },
+                  { value: 'MEDIUM', label: t('maintenance.priority_medium') },
+                  { value: 'HIGH', label: t('maintenance.priority_high') },
+                  { value: 'URGENT', label: t('maintenance.priority_urgent') },
+                ]}
+              />
             </Col>
             <Col md={3}>
-              <Form.Select
+              <SearchableSelect
                 name="category"
                 value={filters.category}
                 onChange={handleFilterChange}
-              >
-                <option value="">{t('maintenance.all_categories')}</option>
-                <option value="PLUMBING">{t('maintenance.cat_plumbing')}</option>
-                <option value="ELECTRICAL">{t('maintenance.cat_electrical')}</option>
-                <option value="HVAC">{t('maintenance.cat_hvac')}</option>
-                <option value="APPLIANCE">{t('maintenance.cat_appliance')}</option>
-                <option value="STRUCTURAL">{t('maintenance.cat_structural')}</option>
-                <option value="OTHER">{t('maintenance.cat_other')}</option>
-              </Form.Select>
+                placeholder={t('maintenance.all_categories')}
+                options={[
+                  { value: 'PLUMBING', label: t('maintenance.cat_plumbing') },
+                  { value: 'ELECTRICAL', label: t('maintenance.cat_electrical') },
+                  { value: 'HVAC', label: t('maintenance.cat_hvac') },
+                  { value: 'APPLIANCE', label: t('maintenance.cat_appliance') },
+                  { value: 'STRUCTURAL', label: t('maintenance.cat_structural') },
+                  { value: 'OTHER', label: t('maintenance.cat_other') },
+                ]}
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -310,45 +312,40 @@ const MaintenanceList = () => {
                       </td>
                       <td>
                         <Button
-                          variant="link"
+                          variant="info"
                           size="sm"
-                          className="text-info p-1"
+                          className="me-1"
                           onClick={() => navigate(`/maintenance/${request.id}`)}
-                          title={t('common.view')}
                         >
-                          <i className="bi bi-eye"></i>
+                          {t('common.view')}
                         </Button>
                         {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
                           <Button
-                            variant="link"
+                            variant="primary"
                             size="sm"
-                            className="text-primary p-1"
+                            className="me-1"
                             onClick={() => handleUpdateStatus(request)}
-                            title={t('maintenance.update_status')}
                           >
-                            <i className="bi bi-pencil"></i>
+                            {t('maintenance.update_status')}
                           </Button>
                         )}
                         {user?.role === 'TENANT' && request.status === 'PENDING' && (
                           <Button
-                            variant="link"
+                            variant="warning"
                             size="sm"
-                            className="text-danger p-1"
+                            className="me-1"
                             onClick={() => handleDelete(request)}
-                            title={t('common.cancel')}
                           >
-                            <i className="bi bi-x-circle"></i>
+                            {t('common.cancel')}
                           </Button>
                         )}
                         {user?.role === 'ADMIN' && (
                           <Button
-                            variant="link"
+                            variant="danger"
                             size="sm"
-                            className="text-danger p-1"
                             onClick={() => handleDelete(request)}
-                            title={t('common.delete')}
                           >
-                            <i className="bi bi-trash"></i>
+                            {t('common.delete')}
                           </Button>
                         )}
                       </td>
@@ -397,15 +394,33 @@ const MaintenanceList = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>{t('common.status')}</Form.Label>
-              <Form.Select
-                value={updateData.status}
-                onChange={(e) => setUpdateData((prev) => ({ ...prev, status: e.target.value }))}
-              >
-                <option value="PENDING">{t('maintenance.status_pending')}</option>
-                <option value="IN_PROGRESS">{t('maintenance.status_in_progress')}</option>
-                <option value="COMPLETED">{t('maintenance.status_completed')}</option>
-                <option value="CANCELLED">{t('maintenance.status_cancelled')}</option>
-              </Form.Select>
+              <Select
+                value={[
+                  { value: 'PENDING', label: t('maintenance.status_pending') },
+                  { value: 'IN_PROGRESS', label: t('maintenance.status_in_progress') },
+                  { value: 'COMPLETED', label: t('maintenance.status_completed') },
+                  { value: 'CANCELLED', label: t('maintenance.status_cancelled') },
+                ].find((opt) => opt.value === updateData.status) || null}
+                onChange={(opt) => setUpdateData((prev) => ({ ...prev, status: opt ? opt.value : '' }))}
+                options={[
+                  { value: 'PENDING', label: t('maintenance.status_pending') },
+                  { value: 'IN_PROGRESS', label: t('maintenance.status_in_progress') },
+                  { value: 'COMPLETED', label: t('maintenance.status_completed') },
+                  { value: 'CANCELLED', label: t('maintenance.status_cancelled') },
+                ]}
+                isSearchable
+                isRtl={isAr}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: '38px',
+                    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                    '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                  }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
             </Form.Group>
             {updateData.status === 'COMPLETED' && (
               <Form.Group className="mb-3">

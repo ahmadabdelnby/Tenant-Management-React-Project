@@ -6,8 +6,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Card, Form, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
+import Select from 'react-select';
 import { createMaintenanceRequest } from '../../store/slices/maintenanceSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import maintenanceService from '../../services/maintenanceService';
@@ -27,6 +28,7 @@ const MaintenanceForm = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
   } = useForm({
     defaultValues: {
       priority: 'MEDIUM',
@@ -135,21 +137,45 @@ const MaintenanceForm = () => {
               <Col md={12}>
                 <Form.Group>
                   <Form.Label>{t('maintenance.select_unit')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.unitId}
-                    {...register('unitId', { required: t('maintenance.select_unit_required') })}
-                  >
-                    {myUnits.length > 1 && <option value="">-- {t('maintenance.select_unit_placeholder')} --</option>}
-                    {myUnits.map((unit) => (
-                      <option key={unit.unitId} value={unit.unitId}>
-                        {unit.buildingName} - {t('units.unit')} {unit.unitNumber}
-                        {unit.floor && ` (${t('units.floor')} ${unit.floor})`}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.unitId?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="unitId"
+                    control={control}
+                    rules={{ required: t('maintenance.select_unit_required') }}
+                    render={({ field }) => {
+                      const unitOptions = myUnits.map((unit) => ({
+                        value: unit.unitId,
+                        label: `${unit.buildingName} - ${t('units.unit')} ${unit.unitNumber}${unit.floor ? ` (${t('units.floor')} ${unit.floor})` : ''}`,
+                      }));
+                      const selectedOption = unitOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={unitOptions}
+                          placeholder={`-- ${t('maintenance.select_unit_placeholder')} --`}
+                          isClearable
+                          isSearchable
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.unitId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.unitId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.unitId && (
+                    <div className="invalid-feedback d-block">{errors.unitId.message}</div>
+                  )}
                   {myUnits.length > 1 && (
                     <Form.Text className="text-muted">
                       {t('maintenance.multiple_units_hint', { count: myUnits.length })}
@@ -214,18 +240,46 @@ const MaintenanceForm = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>{t('maintenance.priority')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    isInvalid={!!errors.priority}
-                    {...register('priority', { required: t('maintenance.priority_required') })}
-                  >
-                    <option value="LOW">{t('maintenance.priority_low')} - {t('maintenance.priority_low_desc')}</option>
-                    <option value="MEDIUM">{t('maintenance.priority_medium')} - {t('maintenance.priority_medium_desc')}</option>
-                    <option value="HIGH">{t('maintenance.priority_high')} - {t('maintenance.priority_high_desc')}</option>
-                    <option value="URGENT">{t('maintenance.priority_urgent')} - {t('maintenance.priority_urgent_desc')}</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.priority?.message}
-                  </Form.Control.Feedback>
+                  <Controller
+                    name="priority"
+                    control={control}
+                    rules={{ required: t('maintenance.priority_required') }}
+                    render={({ field }) => {
+                      const priorityOptions = [
+                        { value: 'LOW', label: `${t('maintenance.priority_low')} - ${t('maintenance.priority_low_desc')}` },
+                        { value: 'MEDIUM', label: `${t('maintenance.priority_medium')} - ${t('maintenance.priority_medium_desc')}` },
+                        { value: 'HIGH', label: `${t('maintenance.priority_high')} - ${t('maintenance.priority_high_desc')}` },
+                        { value: 'URGENT', label: `${t('maintenance.priority_urgent')} - ${t('maintenance.priority_urgent_desc')}` },
+                      ];
+                      const selectedOption = priorityOptions.find(
+                        (opt) => opt.value === field.value
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={priorityOptions}
+                          placeholder={t('maintenance.priority')}
+                          isSearchable
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.priority ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.priority
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                  {errors.priority && (
+                    <div className="invalid-feedback d-block">{errors.priority.message}</div>
+                  )}
                 </Form.Group>
               </Col>
 

@@ -416,7 +416,9 @@
     "role_required": "Role is required",
     "min_2_chars": "Min 2 characters",
     "min_8_chars": "Min 8 characters",
-    "password_pattern": "Must contain uppercase, lowercase and number"
+    "password_pattern": "Must contain uppercase, lowercase and number",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   },
 
   "common": {
