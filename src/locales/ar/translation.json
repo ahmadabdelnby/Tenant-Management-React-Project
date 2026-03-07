@@ -11,6 +11,7 @@
     "tenancies": "عقود الإيجار",
     "maintenance": "الصيانة",
     "payments": "المدفوعات",
+    "my_payments": "مدفوعاتي",
     "logout": "تسجيل الخروج"
   },
 
@@ -384,7 +385,26 @@
     "amount_positive": "يجب أن يكون المبلغ رقماً موجباً",
     "update_status": "تحديث الحالة",
     "status_updated": "تم تحديث حالة رابط الدفع بنجاح",
-    "status_update_failed": "فشل تحديث حالة رابط الدفع"
+    "status_update_failed": "فشل تحديث حالة رابط الدفع",
+    "download_invoice": "الفاتورة",
+    "invoice_download_failed": "فشل تحميل الفاتورة",
+    "tenant_mode": "مستأجر",
+    "custom_mode": "مخصص",
+    "select_building": "المبنى",
+    "select_building_placeholder": "اختر مبنى...",
+    "select_unit": "الوحدة",
+    "select_unit_placeholder": "اختر وحدة...",
+    "select_tenant": "المستأجر",
+    "select_tenant_placeholder": "اختر مستأجر...",
+    "select_tenant_required": "يرجى اختيار عقد إيجار",
+    "no_active_tenancy": "لا يوجد عقد إيجار نشط لهذه الوحدة",
+    "select_tenancy": "عقد الإيجار",
+    "select_tenancy_placeholder": "ابحث باسم المستأجر أو المبنى أو الوحدة...",
+    "unit": "وحدة",
+    "invoice": "الفاتورة",
+    "my_payments_title": "مدفوعاتي",
+    "my_payments_subtitle": "عرض روابط الدفع والفواتير الخاصة بك",
+    "no_my_links": "لا توجد روابط دفع"
   },
 
   "users": {

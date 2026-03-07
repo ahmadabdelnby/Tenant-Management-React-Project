@@ -27,6 +27,7 @@ import {
   MaintenanceDetail,
   PaymentResult,
   PaymentLinksHistory,
+  MyPaymentLinks,
 } from './pages';
 
 // Protected Route Component
@@ -235,6 +236,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'OWNER']}>
                 <PaymentLinksHistory />
+              </ProtectedRoute>
+            }
+          />
+          {/* My Payments - Tenant */}
+          <Route
+            path="my-payments"
+            element={
+              <ProtectedRoute allowedRoles={['TENANT']}>
+                <MyPaymentLinks />
               </ProtectedRoute>
             }
           />

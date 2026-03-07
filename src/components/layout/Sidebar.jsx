@@ -62,6 +62,12 @@ const Sidebar = ({ isOpen, onToggle }) => {
       labelKey: 'sidebar.payments',
       roles: ['ADMIN', 'OWNER'],
     },
+    {
+      path: '/my-payments',
+      icon: 'bi-receipt',
+      labelKey: 'sidebar.my_payments',
+      roles: ['TENANT'],
+    },
   ];
 
   const filteredMenuItems = menuItems.filter(

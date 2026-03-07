@@ -11,6 +11,7 @@
     "tenancies": "Tenancies",
     "maintenance": "Maintenance",
     "payments": "Payments",
+    "my_payments": "My Payments",
     "logout": "Logout"
   },
 
@@ -384,7 +385,26 @@
     "amount_positive": "Amount must be a positive number",
     "update_status": "Update Status",
     "status_updated": "Payment link status updated successfully",
-    "status_update_failed": "Failed to update payment link status"
+    "status_update_failed": "Failed to update payment link status",
+    "download_invoice": "Invoice",
+    "invoice_download_failed": "Failed to download invoice",
+    "tenant_mode": "Tenant",
+    "custom_mode": "Custom",
+    "select_building": "Building",
+    "select_building_placeholder": "Select a building...",
+    "select_unit": "Unit",
+    "select_unit_placeholder": "Select a unit...",
+    "select_tenant": "Tenant",
+    "select_tenant_placeholder": "Select a tenant...",
+    "select_tenant_required": "Please select a tenancy",
+    "no_active_tenancy": "No active tenancy found for this unit",
+    "select_tenancy": "Tenancy",
+    "select_tenancy_placeholder": "Search by tenant name, building, or unit...",
+    "unit": "Unit",
+    "invoice": "Invoice",
+    "my_payments_title": "My Payments",
+    "my_payments_subtitle": "View your payment links and invoices",
+    "no_my_links": "No payment links found"
   },
 
   "users": {

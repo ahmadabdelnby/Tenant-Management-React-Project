@@ -140,6 +140,22 @@ const PaymentLinksHistory = () => {
     }
   };
 
+  const handleDownloadInvoice = async (link) => {
+    try {
+      const blob = await paymentsService.downloadInvoice(link.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice_${link.order_no}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      dispatch(showNotification({ type: 'error', message: t('payments.invoice_download_failed') }));
+    }
+  };
+
   return (
     <div>
       {/* Page Header */}
@@ -288,13 +304,25 @@ const PaymentLinksHistory = () => {
                         )}
                       </td>
                       <td>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleUpdateClick(link)}
-                        >
-                          {t('payments.update_status')}
-                        </Button>
+                        <div className="d-flex gap-1">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleUpdateClick(link)}
+                          >
+                            {t('payments.update_status')}
+                          </Button>
+                          {link.status?.toLowerCase() === 'fulfilled' && (
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => handleDownloadInvoice(link)}
+                            >
+                              <i className="bi bi-download me-1"></i>
+                              {t('payments.download_invoice')}
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

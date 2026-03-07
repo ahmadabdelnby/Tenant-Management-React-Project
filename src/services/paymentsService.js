@@ -42,9 +42,26 @@ const paymentsService = {
     return api.get(`/payments/payment-links${queryString ? `?${queryString}` : ''}`);
   },
 
+  // Get my payment links (tenant)
+  getMyPaymentLinks: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/payments/my-payment-links${queryString ? `?${queryString}` : ''}`);
+  },
+
   // Update payment link status
   updatePaymentLink: async (id, data) => {
     return api.put(`/payments/payment-links/${id}`, data);
+  },
+
+  // Download invoice PDF for a payment link
+  downloadInvoice: async (id) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/payments/payment-links/${id}/invoice`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to download invoice');
+    return response.blob();
   },
 
   // Get building payment summary
