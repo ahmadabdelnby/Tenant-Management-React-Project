@@ -42,6 +42,11 @@ const paymentsService = {
     return api.get(`/payments/payment-links${queryString ? `?${queryString}` : ''}`);
   },
 
+  // Update payment link status
+  updatePaymentLink: async (id, data) => {
+    return api.put(`/payments/payment-links/${id}`, data);
+  },
+
   // Get building payment summary
   getBuildingSummary: async (params) => {
     const queryString = new URLSearchParams(params).toString();

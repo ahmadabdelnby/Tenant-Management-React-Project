@@ -25,6 +25,9 @@ const BuildingsList = () => {
 
   const isAr = i18n.language?.startsWith('ar');
 
+  // Helper to get localized city name
+  const getCityName = (building) => isAr ? building.cityNameAr : building.cityNameEn;
+
   useEffect(() => {
     dispatch(fetchBuildings({ ...filters, page, limit: 10 }));
   }, [dispatch, filters, page]);
@@ -105,8 +108,8 @@ const BuildingsList = () => {
               <thead>
                 <tr>
                   <th>{t('buildings.building_col')}</th>
-                  <th>{t('buildings.address_col')}</th>
                   <th>{t('buildings.city_col')}</th>
+                  <th>{t('buildings.area_col')}</th>
                   <th>{t('buildings.units_col')}</th>
                   <th>{t('buildings.owner_col')}</th>
                   <th>{t('buildings.actions_col')}</th>
@@ -133,8 +136,8 @@ const BuildingsList = () => {
                           <div className="fw-semibold">{getBuildingName(building)}</div>
                         </div>
                       </td>
-                      <td>{building.address}</td>
-                      <td>{building.city}</td>
+                      <td>{getCityName(building)}</td>
+                      <td>{building.area || '-'}</td>
                       <td>
                         <Badge bg="secondary">{t('buildings.units_badge', { count: building.totalUnits || 0 })}</Badge>
                       </td>

@@ -3,19 +3,26 @@
 // ============================================
 
 import { useEffect, useState, useCallback } from 'react';
-import { Card, Table, Badge, Spinner, Form, Row, Col, Button, InputGroup } from 'react-bootstrap';
+import { Card, Table, Badge, Spinner, Form, Row, Col, Button, InputGroup, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import Select from 'react-select';
 import paymentsService from '../../services/paymentsService';
+import { showNotification } from '../../store/slices/uiSlice';
 
 const PaymentLinksHistory = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
+  const dispatch = useDispatch();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [statusFilter, setStatusFilter] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedLink, setSelectedLink] = useState(null);
+  const [newStatus, setNewStatus] = useState('');
 
   const fetchLinks = useCallback(async () => {
     setLoading(true);
@@ -113,6 +120,23 @@ const PaymentLinksHistory = () => {
       // silent fail
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleUpdateClick = (link) => {
+    setSelectedLink(link);
+    setNewStatus(link.status);
+    setShowUpdateModal(true);
+  };
+
+  const handleUpdateStatus = async () => {
+    try {
+      await paymentsService.updatePaymentLink(selectedLink.id, { status: newStatus });
+      dispatch(showNotification({ type: 'success', message: t('payments.status_updated') }));
+      setShowUpdateModal(false);
+      fetchLinks();
+    } catch {
+      dispatch(showNotification({ type: 'error', message: t('payments.status_update_failed') }));
     }
   };
 
@@ -219,6 +243,7 @@ const PaymentLinksHistory = () => {
                     <th>{t('common.status')}</th>
                     <th>{t('payments.created_at')}</th>
                     <th>{t('payments.payment_link')}</th>
+                    <th>{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,6 +287,15 @@ const PaymentLinksHistory = () => {
                           <span className="text-muted small">{t('payments.no_link')}</span>
                         )}
                       </td>
+                      <td>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleUpdateClick(link)}
+                        >
+                          {t('payments.update_status')}
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -298,6 +332,59 @@ const PaymentLinksHistory = () => {
           </Card.Footer>
         )}
       </Card>
+
+      {/* Update Status Modal */}
+      <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{t('payments.update_status')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedLink && (
+            <div className="mb-3 p-3 rounded" style={{ backgroundColor: 'var(--beige-light)' }}>
+              <strong>{selectedLink.cust_name}</strong>
+              <br />
+              <small className="text-muted">
+                {t('payments.order_no')}: {selectedLink.order_no}
+                {' | '}{formatCurrency(selectedLink.amount)}
+              </small>
+            </div>
+          )}
+          <Form.Group>
+            <Form.Label>{t('common.status')}</Form.Label>
+            <Select
+              value={[
+                { value: 'Pending', label: t('payments.status_pending') },
+                { value: 'Fulfilled', label: t('payments.status_fulfilled') },
+                { value: 'Expired', label: t('payments.status_expired') },
+              ].find(opt => opt.value === newStatus) || null}
+              onChange={(opt) => setNewStatus(opt ? opt.value : '')}
+              options={[
+                { value: 'Pending', label: t('payments.status_pending') },
+                { value: 'Fulfilled', label: t('payments.status_fulfilled') },
+                { value: 'Expired', label: t('payments.status_expired') },
+              ]}
+              isSearchable
+              isRtl={isAr}
+              styles={{
+                control: (base, state) => ({
+                  ...base, minHeight: '38px',
+                  borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+                  boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                }),
+                menu: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="primary" onClick={handleUpdateStatus} disabled={!newStatus}>
+            {t('payments.update_status')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

@@ -61,7 +61,10 @@ const BuildingDetails = () => {
               <i className="bi bi-building me-2"></i>
               {buildingName}
             </h1>
-            <p className="mb-0">{currentBuilding.address}, {currentBuilding.city}</p>
+            <p className="mb-0">
+              {isAr ? currentBuilding.cityNameAr : currentBuilding.cityNameEn}
+              {currentBuilding.area && ` - ${currentBuilding.area}`}
+            </p>
           </div>
           {user?.role === 'ADMIN' && (
             <Button
@@ -100,29 +103,55 @@ const BuildingDetails = () => {
                 </div>
               )}
               <div className="mb-3">
-                <small className="text-muted d-block">{t('buildings.address_label')}</small>
-                <span>{currentBuilding.address}</span>
+                <small className="text-muted d-block">{t('buildings.city_label')}</small>
+                <span>{isAr ? currentBuilding.cityNameAr : currentBuilding.cityNameEn}</span>
               </div>
               <Row>
-                <Col sm={6}>
-                  <div className="mb-3">
-                    <small className="text-muted d-block">{t('buildings.city_label')}</small>
-                    <span>{currentBuilding.city}</span>
-                  </div>
-                </Col>
-                <Col sm={6}>
-                  <div className="mb-3">
-                    <small className="text-muted d-block">{t('buildings.country_label')}</small>
-                    <span>{currentBuilding.country}</span>
-                  </div>
-                </Col>
+                {currentBuilding.area && (
+                  <Col sm={6}>
+                    <div className="mb-3">
+                      <small className="text-muted d-block">{t('buildings.area_label')}</small>
+                      <span>{currentBuilding.area}</span>
+                    </div>
+                  </Col>
+                )}
+                {currentBuilding.block && (
+                  <Col sm={6}>
+                    <div className="mb-3">
+                      <small className="text-muted d-block">{t('buildings.block_label')}</small>
+                      <span>{currentBuilding.block}</span>
+                    </div>
+                  </Col>
+                )}
               </Row>
-              {currentBuilding.postalCode && (
+              <Row>
+                {currentBuilding.avenue && (
+                  <Col sm={6}>
+                    <div className="mb-3">
+                      <small className="text-muted d-block">{t('buildings.avenue_label')}</small>
+                      <span>{currentBuilding.avenue}</span>
+                    </div>
+                  </Col>
+                )}
+                {currentBuilding.street && (
+                  <Col sm={6}>
+                    <div className="mb-3">
+                      <small className="text-muted d-block">{t('buildings.street_label')}</small>
+                      <span>{currentBuilding.street}</span>
+                    </div>
+                  </Col>
+                )}
+              </Row>
+              {currentBuilding.buildingNumber && (
                 <div className="mb-3">
-                  <small className="text-muted d-block">{t('buildings.postal_code_label')}</small>
-                  <span>{currentBuilding.postalCode}</span>
+                  <small className="text-muted d-block">{t('buildings.building_number_label')}</small>
+                  <span>{currentBuilding.buildingNumber}</span>
                 </div>
               )}
+              <div className="mb-3">
+                <small className="text-muted d-block">{t('buildings.country_label')}</small>
+                <span>{t('buildings.kuwait')}</span>
+              </div>
               <div className="mb-3">
                 <small className="text-muted d-block">{t('buildings.total_units_label')}</small>
                 <Badge bg="secondary">{t('buildings.units_badge', { count: currentBuilding.totalUnits || 0 })}</Badge>

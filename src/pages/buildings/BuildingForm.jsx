@@ -16,11 +16,13 @@ import {
   clearCurrentBuilding,
 } from '../../store/slices/buildingsSlice';
 import { fetchUsers } from '../../store/slices/usersSlice';
+import { fetchCities } from '../../store/slices/citiesSlice';
 import { showNotification } from '../../store/slices/uiSlice';
 import LocationPicker from '../../components/maps/LocationPicker';
 
 const BuildingForm = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language?.startsWith('ar');
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -28,6 +30,7 @@ const BuildingForm = () => {
 
   const { currentBuilding, isLoading } = useSelector((state) => state.buildings);
   const { users } = useSelector((state) => state.users);
+  const { cities } = useSelector((state) => state.cities);
   const [owners, setOwners] = useState([]);
   const [location, setLocation] = useState({ lat: null, lng: null });
 
@@ -42,6 +45,7 @@ const BuildingForm = () => {
 
   useEffect(() => {
     dispatch(fetchUsers({ role: 'OWNER', limit: 0 }));
+    dispatch(fetchCities());
     if (isEdit) {
       dispatch(fetchBuildingById(id));
     }
@@ -60,10 +64,12 @@ const BuildingForm = () => {
       reset({
         nameEn: currentBuilding.nameEn || '',
         nameAr: currentBuilding.nameAr || '',
-        address: currentBuilding.address,
-        city: currentBuilding.city,
-        country: currentBuilding.country,
-        postalCode: currentBuilding.postalCode || '',
+        cityId: currentBuilding.cityId,
+        area: currentBuilding.area || '',
+        block: currentBuilding.block || '',
+        avenue: currentBuilding.avenue || '',
+        street: currentBuilding.street || '',
+        buildingNumber: currentBuilding.buildingNumber || '',
         mapEmbed: currentBuilding.mapEmbed || '',
         descriptionEn: currentBuilding.descriptionEn || '',
         descriptionAr: currentBuilding.descriptionAr || '',
@@ -125,99 +131,116 @@ const BuildingForm = () => {
         <Card.Body>
           <Form onSubmit={handleSubmit(onSubmit)}>
             <Row className="g-3">
-              {/* Building Name (English) */}
-              <Col md={6}>
+              {/* Building Name */}
+              <Col md={12}>
                 <Form.Group>
-                  <Form.Label>{t('buildings.building_name_en')} <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.building_name')} <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    dir="ltr"
-                    placeholder={t('buildings.building_name_en_placeholder')}
-                    isInvalid={!!errors.nameEn}
-                    {...register('nameEn', {
-                      required: t('common.name_en_required'),
+                    dir={isAr ? 'rtl' : 'ltr'}
+                    placeholder={isAr ? t('buildings.building_name_ar_placeholder') : t('buildings.building_name_en_placeholder')}
+                    isInvalid={isAr ? !!errors.nameAr : !!errors.nameEn}
+                    {...register(isAr ? 'nameAr' : 'nameEn', {
+                      required: isAr ? t('common.name_ar_required') : t('common.name_en_required'),
                       minLength: { value: 2, message: t('common.min_chars', { count: 2 }) },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.nameEn?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              {/* Building Name (Arabic) */}
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>{t('buildings.building_name_ar')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="text"
-                    dir="rtl"
-                    placeholder={t('buildings.building_name_ar_placeholder')}
-                    isInvalid={!!errors.nameAr}
-                    {...register('nameAr', {
-                      required: t('common.name_ar_required'),
-                      minLength: { value: 2, message: t('common.min_chars', { count: 2 }) },
-                    })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.nameAr?.message}
+                    {isAr ? errors.nameAr?.message : errors.nameEn?.message}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={12}>
                 <Form.Group>
-                  <Form.Label>{t('buildings.address_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder={t('buildings.address_placeholder')}
-                    isInvalid={!!errors.address}
-                    {...register('address', {
-                      required: t('buildings.address_label') + ' is required',
-                    })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.address?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
                   <Form.Label>{t('buildings.city_label')} <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder={t('buildings.city_placeholder')}
-                    isInvalid={!!errors.city}
-                    {...register('city', {
-                      required: t('buildings.city_label') + ' is required',
-                    })}
+                  <Controller
+                    name="cityId"
+                    control={control}
+                    rules={{ required: t('buildings.city_label') + ' is required' }}
+                    render={({ field }) => {
+                      const cityOptions = cities.map((c) => ({
+                        value: c.id,
+                        label: `${c.nameEn} - ${c.nameAr}`,
+                      }));
+                      const selectedOption = cityOptions.find(
+                        (opt) => String(opt.value) === String(field.value)
+                      ) || null;
+                      return (
+                        <Select
+                          value={selectedOption}
+                          onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                          options={cityOptions}
+                          placeholder={t('buildings.select_city')}
+                          isClearable
+                          isSearchable
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '38px',
+                              borderColor: errors.cityId ? '#dc3545' : state.isFocused ? '#86b7fe' : '#dee2e6',
+                              boxShadow: errors.cityId
+                                ? '0 0 0 0.25rem rgba(220,53,69,.25)'
+                                : state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+                              '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#adb5bd' },
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
+                      );
+                    }}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.city?.message}
-                  </Form.Control.Feedback>
+                  {errors.cityId && (
+                    <div className="invalid-feedback d-block">{errors.cityId.message}</div>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>{t('buildings.country_label')} <span className="text-danger">*</span></Form.Label>
+                  <Form.Label>{t('buildings.area_label')}</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder={t('buildings.country_placeholder')}
-                    isInvalid={!!errors.country}
-                    {...register('country', {
-                      required: t('buildings.country_label') + ' is required',
-                    })}
+                    placeholder={t('buildings.area_placeholder')}
+                    {...register('area')}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.country?.message}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>{t('buildings.postal_code_label')}</Form.Label>
+                  <Form.Label>{t('buildings.block_label')}</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder={t('buildings.postal_code_placeholder')}
-                    {...register('postalCode')}
+                    placeholder={t('buildings.block_placeholder')}
+                    {...register('block')}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>{t('buildings.avenue_label')}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={t('buildings.avenue_placeholder')}
+                    {...register('avenue')}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>{t('buildings.street_label')}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={t('buildings.street_placeholder')}
+                    {...register('street')}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>{t('buildings.building_number_label')}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={t('buildings.building_number_placeholder')}
+                    {...register('buildingNumber')}
                   />
                 </Form.Group>
               </Col>
@@ -281,29 +304,16 @@ const BuildingForm = () => {
                   )}
                 </Form.Group>
               </Col>
-              {/* Description (English) */}
-              <Col md={6}>
+              {/* Description */}
+              <Col md={12}>
                 <Form.Group>
-                  <Form.Label>{t('buildings.description_en')}</Form.Label>
+                  <Form.Label>{t('buildings.description_label')}</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    dir="ltr"
-                    placeholder={t('buildings.description_en_placeholder')}
-                    {...register('descriptionEn')}
-                  />
-                </Form.Group>
-              </Col>
-              {/* Description (Arabic) */}
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>{t('buildings.description_ar')}</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    dir="rtl"
-                    placeholder={t('buildings.description_ar_placeholder')}
-                    {...register('descriptionAr')}
+                    dir={isAr ? 'rtl' : 'ltr'}
+                    placeholder={isAr ? t('buildings.description_ar_placeholder') : t('buildings.description_en_placeholder')}
+                    {...register(isAr ? 'descriptionAr' : 'descriptionEn')}
                   />
                 </Form.Group>
               </Col>
