@@ -2,12 +2,14 @@
 // Tenancy Form Page (Create/Edit) - Bootstrap Version
 // ============================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
 import { Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 import {
   createTenancy,
@@ -19,6 +21,81 @@ import { fetchUnits } from '../../store/slices/unitsSlice';
 import { fetchBuildings } from '../../store/slices/buildingsSlice';
 import { fetchUsers } from '../../store/slices/usersSlice';
 import { showNotification } from '../../store/slices/uiSlice';
+
+const quillToolbar = [
+  [{ header: [1, 2, 3, false] }],
+  ['bold', 'italic', 'underline', 'strike'],
+  ['blockquote', 'code-block'],
+  [{ list: 'ordered' }, { list: 'bullet' }],
+  ['link'],
+  ['clean'],
+];
+
+const quillFormats = ['header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'list', 'link'];
+
+const QuillEditor = ({ value = '', onChange, placeholder, isRtl = false }) => {
+  const editorContainerRef = useRef(null);
+  const quillInstanceRef = useRef(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!editorContainerRef.current || quillInstanceRef.current) {
+      return undefined;
+    }
+
+    const quill = new Quill(editorContainerRef.current, {
+      theme: 'snow',
+      placeholder,
+      modules: {
+        toolbar: quillToolbar,
+      },
+      formats: quillFormats,
+    });
+
+    quillInstanceRef.current = quill;
+    quill.root.innerHTML = value || '';
+    quill.root.style.direction = isRtl ? 'rtl' : 'ltr';
+    quill.root.style.textAlign = isRtl ? 'right' : 'left';
+
+    const handleChange = () => {
+      const html = quill.root.innerHTML;
+      const empty = quill.getLength() <= 1;
+      onChangeRef.current(empty ? '' : html);
+    };
+
+    quill.on('text-change', handleChange);
+
+    return () => {
+      quill.off('text-change', handleChange);
+      quillInstanceRef.current = null;
+      if (editorContainerRef.current) {
+        editorContainerRef.current.innerHTML = '';
+      }
+    };
+  }, [isRtl, placeholder]);
+
+  useEffect(() => {
+    const quill = quillInstanceRef.current;
+    if (!quill) return;
+
+    const currentValue = quill.root.innerHTML;
+    const nextValue = value || '';
+
+    if (currentValue !== nextValue) {
+      const selection = quill.getSelection();
+      quill.root.innerHTML = nextValue;
+      if (selection) {
+        quill.setSelection(selection);
+      }
+    }
+  }, [value]);
+
+  return <div ref={editorContainerRef} />;
+};
 
 const TenancyForm = () => {
   const { t, i18n } = useTranslation();
@@ -99,6 +176,12 @@ const TenancyForm = () => {
         monthlyRent: currentTenancy.monthlyRent,
         depositAmount: currentTenancy.depositAmount,
         isActive: currentTenancy.isActive,
+        firstPartyName: currentTenancy.firstPartyName || '',
+        firstPartyId: currentTenancy.firstPartyId || '',
+        secondPartyName: currentTenancy.secondPartyName || '',
+        secondPartyId: currentTenancy.secondPartyId || '',
+        contractDuration: currentTenancy.contractDuration || '',
+        contractNotes: currentTenancy.contractNotes || '',
       });
     }
   }, [currentTenancy, isEdit, reset]);
@@ -122,6 +205,12 @@ const TenancyForm = () => {
       monthlyRent: parseFloat(data.monthlyRent),
       depositAmount: parseFloat(data.depositAmount),
       isActive: isEdit ? Boolean(data.isActive) : true,
+      firstPartyName: data.firstPartyName || '',
+      firstPartyId: data.firstPartyId || '',
+      secondPartyName: data.secondPartyName || '',
+      secondPartyId: data.secondPartyId || '',
+      contractDuration: data.contractDuration || '',
+      contractNotes: data.contractNotes || '',
     };
 
     try {
@@ -374,6 +463,98 @@ const TenancyForm = () => {
                   </Form.Group>
                 </Col>
               )}
+            </Row>
+
+            {/* Contract Details Section */}
+            <div className="mt-4 pt-3 border-top">
+              <h5 className="mb-3">تفاصيل العقد</h5>
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>اسم الطرف الأول (المؤجر)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="أدخل اسم المؤجر"
+                      {...register('firstPartyName')}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>رقم هوية الطرف الأول</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="أدخل رقم الهوية"
+                      {...register('firstPartyId')}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>اسم الطرف الثاني (المستأجر)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="أدخل اسم المستأجر"
+                      {...register('secondPartyName')}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>رقم هوية الطرف الثاني</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="أدخل رقم الهوية"
+                      {...register('secondPartyId')}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>مدة التعاقد</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="مثال: سنة واحدة / 12 شهراً"
+                      {...register('contractDuration')}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Rich Text Editor for Contract Notes */}
+              <Form.Group className="mt-3">
+                <Form.Label>ملاحظات العقد</Form.Label>
+                <Controller
+                  name="contractNotes"
+                  control={control}
+                  render={({ field }) => (
+                    <div style={{ marginBottom: '40px' }}>
+                      <QuillEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="أدخل ملاحظات العقد..."
+                        isRtl={isAr}
+                      />
+                    </div>
+                  )}
+                />
+              </Form.Group>
+            </div>
+
+            <Row className="g-3">
+              <Col md={12}>
+                {isEdit && (
+                  <Form.Group>
+                    <Form.Label>{t('tenancies.status_col')}</Form.Label>
+                    <Form.Check
+                      type="switch"
+                      id="isActive"
+                      label={watch('isActive') ? t('users.active') : t('users.inactive')}
+                      {...register('isActive')}
+                    />
+                  </Form.Group>
+                )}
+              </Col>
             </Row>
 
             <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">

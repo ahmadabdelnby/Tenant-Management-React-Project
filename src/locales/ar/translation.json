@@ -258,7 +258,14 @@
     "edit_tenancy": "تعديل عقد الإيجار",
     "to": "إلى",
     "tenant": "المستأجر",
-    "tenancy_details": "تفاصيل عقد الإيجار"
+    "tenancy_details": "تفاصيل عقد الإيجار",
+    "export_contract": "تصدير العقد",
+    "first_party_name": "اسم الطرف الأول (المؤجر)",
+    "first_party_id": "رقم هوية الطرف الأول",
+    "second_party_name": "اسم الطرف الثاني (المستأجر)",
+    "second_party_id": "رقم هوية الطرف الثاني",
+    "contract_duration": "مدة التعاقد",
+    "contract_notes": "ملاحظات العقد"
   },
 
   "maintenance": {
@@ -487,7 +494,8 @@
     "na": "غير متوفر",
     "kwd": "د.ك",
     "confirm_delete": "تأكيد الحذف",
-    "clear": "مسح"
+    "clear": "مسح",
+    "exporting": "جاري التصدير..."
   },
 
   "pagination": {
@@ -515,7 +523,8 @@
     "payment_updated": "تم تحديث الدفعة بنجاح",
     "payment_link_created": "تم إنشاء رابط الدفع وإشعار المستأجر",
     "excel_downloaded": "تم تحميل تقرير Excel بنجاح",
-    "export_failed": "فشل تصدير التقرير"
+    "export_failed": "فشل تصدير التقرير",
+    "contract_exported": "تم تصدير العقد بنجاح"
   },
 
   "payments_page": {

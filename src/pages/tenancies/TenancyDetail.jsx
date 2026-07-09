@@ -2,12 +2,14 @@
 // Tenancy Detail Page - Bootstrap Version
 // ============================================
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { fetchTenancyById, clearCurrentTenancy } from '../../store/slices/tenanciesSlice';
+import { showNotification } from '../../store/slices/uiSlice';
+import { tenanciesService } from '../../services';
 
 const TenancyDetail = () => {
   const { t } = useTranslation();
@@ -16,6 +18,7 @@ const TenancyDetail = () => {
   const { id } = useParams();
   const { currentTenancy, isLoading } = useSelector((state) => state.tenancies);
   const { user } = useSelector((state) => state.auth);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     dispatch(fetchTenancyById(id));
@@ -41,6 +44,29 @@ const TenancyDetail = () => {
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '-';
     return new Intl.NumberFormat('en-US').format(amount) + ' ' + t('common.kwd');
+  };
+
+  const handleExportContract = async () => {
+    try {
+      setIsExporting(true);
+      const response = await tenanciesService.exportContract(id);
+      
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Tenancy_${id}_Contract.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      dispatch(showNotification({ type: 'success', message: t('notifications.contract_exported') }));
+    } catch (error) {
+      dispatch(showNotification({ type: 'error', message: error?.message || t('notifications.export_failed') }));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isLoading || !currentTenancy) {
@@ -78,13 +104,23 @@ const TenancyDetail = () => {
             </p>
           </div>
           {user?.role === 'ADMIN' && (
-            <Button
-              variant="primary"
-              onClick={() => navigate(`/tenancies/${id}/edit`)}
-            >
-              <i className="bi bi-pencil me-2"></i>
-              {t('tenancies.edit_tenancy')}
-            </Button>
+            <div className="d-flex gap-2">
+              <Button
+                variant="outline-secondary"
+                onClick={handleExportContract}
+                disabled={isExporting}
+              >
+                <i className={`bi ${isExporting ? 'bi-arrow-down-circle' : 'bi-download'} me-2`}></i>
+                {isExporting ? t('common.exporting') : t('tenancies.export_contract')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => navigate(`/tenancies/${id}/edit`)}
+              >
+                <i className="bi bi-pencil me-2"></i>
+                {t('tenancies.edit_tenancy')}
+              </Button>
+            </div>
           )}
         </div>
       </div>

@@ -40,6 +40,11 @@ const tenanciesService = {
   delete: async (id) => {
     return api.delete(`/tenancies/${id}`);
   },
+
+  // Export contract as Word document
+  exportContract: async (id) => {
+    return api.getBinary(`/tenancies/${id}/export-contract`);
+  },
 };
 
 export default tenanciesService;

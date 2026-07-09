@@ -46,6 +46,31 @@ const api = {
     return handleResponse(response);
   },
 
+  // GET binary (arrayBuffer) - for file downloads
+  getBinary: async (endpoint) => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      let msg = 'Something went wrong';
+      try {
+        const txt = await response.text();
+        msg = txt || msg;
+      } catch (e) {}
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      throw new Error(msg);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return { data: arrayBuffer, headers: response.headers };
+  },
+
   // POST request
   post: async (endpoint, body) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

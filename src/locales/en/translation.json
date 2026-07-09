@@ -258,7 +258,14 @@
     "edit_tenancy": "Edit Tenancy",
     "to": "to",
     "tenant": "Tenant",
-    "tenancy_details": "Tenancy Details"
+    "tenancy_details": "Tenancy Details",
+    "export_contract": "Export Contract",
+    "first_party_name": "Lessor Name (First Party)",
+    "first_party_id": "Lessor ID",
+    "second_party_name": "Lessee Name (Second Party)",
+    "second_party_id": "Lessee ID",
+    "contract_duration": "Contract Duration",
+    "contract_notes": "Contract Notes"
   },
 
   "maintenance": {
@@ -487,7 +494,8 @@
     "na": "N/A",
     "kwd": "KWD",
     "confirm_delete": "Confirm Delete",
-    "clear": "Clear"
+    "clear": "Clear",
+    "exporting": "Exporting..."
   },
 
   "pagination": {
@@ -515,7 +523,8 @@
     "payment_updated": "Payment updated successfully",
     "payment_link_created": "Payment link created and tenant notified",
     "excel_downloaded": "Excel report downloaded successfully",
-    "export_failed": "Failed to export report"
+    "export_failed": "Failed to export report",
+    "contract_exported": "Contract exported successfully"
   },
 
   "payments_page": {
