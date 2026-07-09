@@ -41,7 +41,7 @@ const tenanciesService = {
     return api.delete(`/tenancies/${id}`);
   },
 
-  // Export contract as Word document
+  // Export contract as PDF document
   exportContract: async (id) => {
     return api.getBinary(`/tenancies/${id}/export-contract`);
   },
